@@ -40,6 +40,21 @@ Elige un nombre disponible, sin espacios, y una contraseña de 8 a 128 caractere
 
 La cuenta nueva empieza con permisos estándar. En Django Admin, un superusuario puede verla en **Usuarios** y vincularla desde **Personas → Cuenta**. Los roles de cada vivienda se asignan desde **Participaciones**. `aula_kevin` sirve para consultar los registros de clase. Para administrar cuentas, crea tu propio superusuario con `python manage.py createsuperuser`. [Colección de registro y login](apidog/RegistroUsuarios.json) · [Panel local](http://127.0.0.1:8000/admin/)
 
+### Preparar una cuenta y su rol en Django Admin
+
+Para mostrar el recorrido de la clase 3, entra a Django Admin con un superusuario. Con el servidor abierto, puedes crear el primero desde otra terminal en el repositorio.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py createsuperuser
+```
+
+1. Crea una cuenta de prueba con nombre y contraseña en **Usuarios**. Si ya creaste la cuenta desde Apidog, búscala en ese mismo listado. [Usuarios](http://127.0.0.1:8000/admin/auth/user/)
+2. Abre **Personas → Añadir persona**, completa **Código** y **Nombre**, y selecciona la cuenta en **Cuenta**. [Añadir persona](http://127.0.0.1:8000/admin/residencial/persona/add/)
+3. Abre **Participaciones → Añadir**, selecciona la **Persona**, la **Vivienda** y el **Rol**. Elige **Propietario administrador** para dar autoridad de asignación sobre esa vivienda. El rol **Arrendatario** permite consultar su propio vínculo. [Añadir participación](http://127.0.0.1:8000/admin/residencial/participacion/add/)
+4. Inicia sesión en Apidog con esa cuenta y consulta `GET /api/viviendas/{id}/asignaciones/` con su Bearer JWT. Usa el `id` que devuelve `GET /api/viviendas/` para la vivienda elegida.
+
+Para demostrar la operación de negocio en Apidog, una persona con rol **Propietario administrador** envía `POST /api/viviendas/{id}/asignaciones/` con el ID de una ficha de Persona y `rol` igual a `arrendatario` o `conviviente`. Un `GET` posterior permite comprobar que se guardó.
+
 ## Guía para la clase
 
 Abre al mismo tiempo **Apidog** y el **Historial**. Las peticiones de la carpeta **Acceso de una residente** están ordenadas. Pulsa **Enviar** en cada una, desde la primera. El login y las consultas guardan en el entorno los tokens y los identificadores que utilizan los pasos siguientes.
@@ -217,5 +232,7 @@ npx --yes --package=apidog-cli@2.2.12 apidog run apidog/RegistroUsuarios.json --
 | Cuatro CRUD, JWT y asignaciones · Apidog CLI | 53 peticiones y 87 aserciones aprobadas. [Registro](docs/evidencia-rubrica.txt) |
 | Registro de usuarios · Apidog CLI | 7 peticiones y 14 aserciones aprobadas. Cubren alta, duplicado, validación, login y permisos iniciales. |
 | Backend · Django | 17 pruebas aprobadas. Incluyen registro, login, permisos y trazabilidad. |
+
+Para entregar la revisión de clase, comparte la URL del repositorio y el hash de la versión que se mostró en Apidog. En el equipo de la demostración, `git rev-parse HEAD` imprime ese hash. Cada integrante explica su aporte y una decisión del flujo.
 
 **Decisión para el siguiente avance.** Las autorizaciones se conceden por persona y punto. La app usa proximidad simulada y el operador representa al lector RFID. La integración física tendrá que registrar una confirmación del dispositivo después de la autorización.
