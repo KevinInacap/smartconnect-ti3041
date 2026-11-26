@@ -135,6 +135,21 @@ class PruebaAPI(APITestCase):
         self.autenticar("demo_residente")
         self.assertEqual(self.client.get("/api/historial/").data, [])
 
+    def test_arrendataria_entra_sin_administrar(self):
+        vecina = Persona.objects.get(codigo="vecina")
+        self.assertFalse(vecina.cuenta.is_staff)
+        self.autenticar("demo_vecina")
+        casa = f"/api/viviendas/{self.casa.pk}/asignaciones/"
+        self.assertEqual([p["rol"] for p in self.client.get(casa).data], ["arrendatario"])
+        intento = self.client.post("/api/accesos/solicitudes/",
+                                   {"punto": self.porton.pk, "medio": "app", "cerca": True}, format="json")
+        self.assertEqual(intento.status_code, 201)
+        self.assertTrue(intento.data["permitido"])
+        self.assertEqual(intento.data["persona"], vecina.pk)
+        asignaciones = list(Participacion.objects.order_by("pk").values())
+        self.assertEqual(self.client.post(casa, {"persona": self.luz.pk, "rol": "conviviente"}).status_code, 403)
+        self.assertEqual(list(Participacion.objects.order_by("pk").values()), asignaciones)
+
     def test_revocacion_de_vinculo_y_tarjeta(self):
         self.autenticar("demo_operador")
         datos = {"punto": self.porton.pk, "medio": "rfid", "uid": "DEMO-RFID-LUZ"}

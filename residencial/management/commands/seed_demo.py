@@ -9,7 +9,7 @@ from residencial.models import Credencial, Empleo, Participacion, PermisoPunto, 
 
 
 class Command(BaseCommand):
-    help = "Crea un conjunto de datos ficticios para la defensa local."
+    help = "Crea personas, viviendas y permisos ficticios para las pruebas locales."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -19,6 +19,7 @@ class Command(BaseCommand):
         for codigo, nombre in [
             ("operador", "Alex Operaciones"), ("gestora", "Inés Rojas"),
             ("duena", "Alba Soto"), ("residente", "Darío Vega"), ("trabajador", "Luz Mora"),
+            ("vecina", "Elena Vidal"),
         ]:
             persona, _ = Persona.objects.get_or_create(codigo=codigo, defaults={"nombre": nombre})
             username = f"demo_{codigo}"
@@ -39,6 +40,7 @@ class Command(BaseCommand):
         depto, _ = Vivienda.objects.get_or_create(terreno=sur, codigo="S-02", defaults={"tipo": "departamento"})
         for codigo, vivienda, rol in [
             ("duena", casa, Participacion.Rol.ADMIN),
+            ("vecina", casa, Participacion.Rol.ARRENDATARIO),
             ("duena", depto, Participacion.Rol.ARRENDATARIO),
             ("residente", depto, Participacion.Rol.ADMIN),
         ]:
@@ -47,7 +49,7 @@ class Command(BaseCommand):
         PuntoAcceso.objects.get_or_create(terreno=norte, codigo="N-02", defaults={"nombre": "Puerta de servicio"})
         PuntoAcceso.objects.get_or_create(terreno=sur, codigo="S-01", defaults={"nombre": "Vestíbulo"})
         Empleo.objects.get_or_create(persona=personas["trabajador"], terreno=norte)
-        for codigo in ["duena", "trabajador"]:
+        for codigo in ["duena", "trabajador", "vecina"]:
             PermisoPunto.objects.get_or_create(persona=personas[codigo], punto=principal)
         Credencial.objects.get_or_create(huella=Credencial.identificar("DEMO-RFID-LUZ"), defaults={"persona": personas["trabajador"]})
         if nuevos:

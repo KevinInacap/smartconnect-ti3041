@@ -1,7 +1,7 @@
 {
   "apidogCli": "1.1",
   "info": {
-    "name": "SmartConnect · Defensa del segundo avance",
+    "name": "SmartConnect · Acceso residencial",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -31,14 +31,14 @@
   },
   "item": [
     {
-      "name": "Defensa acumulativa",
+      "name": "Acceso de una residente",
       "item": [
         {
-          "name": "JWT · recurso protegido sin token",
+          "name": "Viviendas sin sesión",
           "metaInfo": {
             "id": "1",
             "type": "http",
-            "name": "JWT · recurso protegido sin token"
+            "name": "Viviendas sin sesión"
           },
           "request": {
             "method": "GET",
@@ -48,7 +48,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/personas/"
+            "url": "{{baseUrl}}/api/viviendas/"
           },
           "event": [
             {
@@ -63,11 +63,11 @@
           ]
         },
         {
-          "name": "JWT · iniciar sesión como operador",
+          "name": "Iniciar sesión",
           "metaInfo": {
             "id": "2",
             "type": "http",
-            "name": "JWT · iniciar sesión como operador"
+            "name": "Iniciar sesión"
           },
           "request": {
             "method": "POST",
@@ -84,7 +84,7 @@
             "url": "{{baseUrl}}/api/token/",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"demo_operador\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "raw": "{\n  \"username\": \"demo_vecina\",\n  \"password\": \"{{demoPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -99,106 +99,19 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"jwt_operador\", pm.response.json().access);",
-                  "pm.environment.set(\"renovacion\", pm.response.json().refresh);",
-                  "pm.environment.set(\"serie\", String(Date.now()));"
+                  "pm.environment.set(\"access\", pm.response.json().access);",
+                  "pm.environment.set(\"refresh\", pm.response.json().refresh);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "JWT · iniciar sesión como duena",
+          "name": "Renovar sesión",
           "metaInfo": {
             "id": "3",
             "type": "http",
-            "name": "JWT · iniciar sesión como duena"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/token/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"demo_duena\",\n  \"password\": \"{{demoPassword}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"jwt_duena\", pm.response.json().access);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "JWT · iniciar sesión como trabajador",
-          "metaInfo": {
-            "id": "4",
-            "type": "http",
-            "name": "JWT · iniciar sesión como trabajador"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/token/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"demo_trabajador\",\n  \"password\": \"{{demoPassword}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"jwt_trabajador\", pm.response.json().access);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "JWT · renovar y utilizar el nuevo access",
-          "metaInfo": {
-            "id": "5",
-            "type": "http",
-            "name": "JWT · renovar y utilizar el nuevo access"
+            "name": "Renovar sesión"
           },
           "request": {
             "method": "POST",
@@ -215,7 +128,7 @@
             "url": "{{baseUrl}}/api/token/refresh/",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refresh\": \"{{renovacion}}\"\n}",
+              "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -230,18 +143,88 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"jwt_operador\", pm.response.json().access);"
+                  "pm.environment.set(\"access\", pm.response.json().access);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Catálogo · localizar terreno Norte",
+          "name": "Mis viviendas",
+          "metaInfo": {
+            "id": "4",
+            "type": "http",
+            "name": "Mis viviendas"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.environment.set(\"casa\", pm.response.json().find(v => v.codigo === \"A-01\").id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi rol en A-01",
+          "metaInfo": {
+            "id": "5",
+            "type": "http",
+            "name": "Mi rol en A-01"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const vinculo = pm.response.json().find(v => v.rol === \"arrendatario\" && v.vivienda === Number(pm.environment.get(\"casa\")));",
+                  "pm.test(\"Soy arrendataria de A-01\", function () { pm.expect(vinculo).to.exist; });",
+                  "pm.environment.set(\"persona\", vinculo.persona);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Puntos de mi terreno",
           "metaInfo": {
             "id": "6",
             "type": "http",
-            "name": "Catálogo · localizar terreno Norte"
+            "name": "Puntos de mi terreno"
           },
           "request": {
             "method": "GET",
@@ -252,10 +235,10 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
+                "value": "Bearer {{access}}"
               }
             ],
-            "url": "{{baseUrl}}/api/terrenos/"
+            "url": "{{baseUrl}}/api/puntos-acceso/"
           },
           "event": [
             {
@@ -264,123 +247,19 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"norte\", pm.response.json().find(fila => fila.codigo === \"norte\").id);"
+                  "pm.environment.set(\"principal\", pm.response.json().find(p => p.codigo === \"N-01\").id);",
+                  "pm.environment.set(\"servicio\", pm.response.json().find(p => p.codigo === \"N-02\").id);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Catálogo · identificar a la administradora",
+          "name": "Entrar por el portón",
           "metaInfo": {
             "id": "7",
             "type": "http",
-            "name": "Catálogo · identificar a la administradora"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"gestora\", pm.response.json().find(fila => fila.codigo === \"gestora\").id);",
-                  "pm.environment.set(\"trabajador\", pm.response.json().find(fila => fila.codigo === \"trabajador\").id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Catálogo · identificar ambas viviendas",
-          "metaInfo": {
-            "id": "8",
-            "type": "http",
-            "name": "Catálogo · identificar ambas viviendas"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"casa\", pm.response.json().find(fila => fila.codigo === \"A-01\").id);",
-                  "pm.environment.set(\"depto\", pm.response.json().find(fila => fila.codigo === \"S-02\").id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Catálogo · identificar ambos puntos",
-          "metaInfo": {
-            "id": "9",
-            "type": "http",
-            "name": "Catálogo · identificar ambos puntos"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"principal\", pm.response.json().find(fila => fila.codigo === \"N-01\").id);",
-                  "pm.environment.set(\"servicio\", pm.response.json().find(fila => fila.codigo === \"N-02\").id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · crear",
-          "metaInfo": {
-            "id": "10",
-            "type": "http",
-            "name": "persona · crear"
+            "name": "Entrar por el portón"
           },
           "request": {
             "method": "POST",
@@ -391,1701 +270,7 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"p-{{serie}}\",\n  \"nombre\": \"Marina Lago\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.environment.set(\"temporal\", pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · localizar en listado",
-          "metaInfo": {
-            "id": "11",
-            "type": "http",
-            "name": "persona · localizar en listado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · consultar detalle",
-          "metaInfo": {
-            "id": "12",
-            "type": "http",
-            "name": "persona · consultar detalle"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lago\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · reemplazar con PUT",
-          "metaInfo": {
-            "id": "13",
-            "type": "http",
-            "name": "persona · reemplazar con PUT"
-          },
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"p-{{serie}}\",\n  \"nombre\": \"Marina Lagos\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lagos\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · recuperar el valor guardado",
-          "metaInfo": {
-            "id": "14",
-            "type": "http",
-            "name": "persona · recuperar el valor guardado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lagos\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · actualizar con PATCH",
-          "metaInfo": {
-            "id": "15",
-            "type": "http",
-            "name": "persona · actualizar con PATCH"
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Marina Lago\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lago\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · eliminar",
-          "metaInfo": {
-            "id": "16",
-            "type": "http",
-            "name": "persona · eliminar"
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "persona · verificar baja",
-          "metaInfo": {
-            "id": "17",
-            "type": "http",
-            "name": "persona · verificar baja"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · crear",
-          "metaInfo": {
-            "id": "18",
-            "type": "http",
-            "name": "terreno · crear"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"t-{{serie}}\",\n  \"nombre\": \"Parque de prueba\",\n  \"administrador\": \"{{gestora}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.environment.set(\"temporal\", pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · localizar en listado",
-          "metaInfo": {
-            "id": "19",
-            "type": "http",
-            "name": "terreno · localizar en listado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · consultar detalle",
-          "metaInfo": {
-            "id": "20",
-            "type": "http",
-            "name": "terreno · consultar detalle"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de prueba\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · reemplazar con PUT",
-          "metaInfo": {
-            "id": "21",
-            "type": "http",
-            "name": "terreno · reemplazar con PUT"
-          },
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"t-{{serie}}\",\n  \"nombre\": \"Parque de ensayo\",\n  \"administrador\": \"{{gestora}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de ensayo\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · recuperar el valor guardado",
-          "metaInfo": {
-            "id": "22",
-            "type": "http",
-            "name": "terreno · recuperar el valor guardado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de ensayo\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · actualizar con PATCH",
-          "metaInfo": {
-            "id": "23",
-            "type": "http",
-            "name": "terreno · actualizar con PATCH"
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Parque de prueba\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de prueba\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · eliminar",
-          "metaInfo": {
-            "id": "24",
-            "type": "http",
-            "name": "terreno · eliminar"
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "terreno · verificar baja",
-          "metaInfo": {
-            "id": "25",
-            "type": "http",
-            "name": "terreno · verificar baja"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · crear",
-          "metaInfo": {
-            "id": "26",
-            "type": "http",
-            "name": "vivienda · crear"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"v-{{serie}}\",\n  \"tipo\": \"casa\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.environment.set(\"temporal\", pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · localizar en listado",
-          "metaInfo": {
-            "id": "27",
-            "type": "http",
-            "name": "vivienda · localizar en listado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · consultar detalle",
-          "metaInfo": {
-            "id": "28",
-            "type": "http",
-            "name": "vivienda · consultar detalle"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"casa\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · reemplazar con PUT",
-          "metaInfo": {
-            "id": "29",
-            "type": "http",
-            "name": "vivienda · reemplazar con PUT"
-          },
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"v-{{serie}}\",\n  \"tipo\": \"departamento\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"departamento\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · recuperar el valor guardado",
-          "metaInfo": {
-            "id": "30",
-            "type": "http",
-            "name": "vivienda · recuperar el valor guardado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"departamento\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · actualizar con PATCH",
-          "metaInfo": {
-            "id": "31",
-            "type": "http",
-            "name": "vivienda · actualizar con PATCH"
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"tipo\": \"casa\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"casa\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · eliminar",
-          "metaInfo": {
-            "id": "32",
-            "type": "http",
-            "name": "vivienda · eliminar"
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "vivienda · verificar baja",
-          "metaInfo": {
-            "id": "33",
-            "type": "http",
-            "name": "vivienda · verificar baja"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · crear",
-          "metaInfo": {
-            "id": "34",
-            "type": "http",
-            "name": "punto · crear"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"a-{{serie}}\",\n  \"nombre\": \"Puerta de patio\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.environment.set(\"temporal\", pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · localizar en listado",
-          "metaInfo": {
-            "id": "35",
-            "type": "http",
-            "name": "punto · localizar en listado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · consultar detalle",
-          "metaInfo": {
-            "id": "36",
-            "type": "http",
-            "name": "punto · consultar detalle"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta de patio\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · reemplazar con PUT",
-          "metaInfo": {
-            "id": "37",
-            "type": "http",
-            "name": "punto · reemplazar con PUT"
-          },
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"a-{{serie}}\",\n  \"nombre\": \"Puerta del jardín\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta del jardín\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · recuperar el valor guardado",
-          "metaInfo": {
-            "id": "38",
-            "type": "http",
-            "name": "punto · recuperar el valor guardado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta del jardín\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · actualizar con PATCH",
-          "metaInfo": {
-            "id": "39",
-            "type": "http",
-            "name": "punto · actualizar con PATCH"
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Puerta de patio\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta de patio\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · eliminar",
-          "metaInfo": {
-            "id": "40",
-            "type": "http",
-            "name": "punto · eliminar"
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "punto · verificar baja",
-          "metaInfo": {
-            "id": "41",
-            "type": "http",
-            "name": "punto · verificar baja"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Relaciones · impedir borrar un terreno con viviendas",
-          "metaInfo": {
-            "id": "42",
-            "type": "http",
-            "name": "Relaciones · impedir borrar un terreno con viviendas"
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{norte}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Relaciones · comprobar que Norte sigue disponible",
-          "metaInfo": {
-            "id": "43",
-            "type": "http",
-            "name": "Relaciones · comprobar que Norte sigue disponible"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/{{norte}}/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Valor guardado de codigo\", function () { pm.expect(pm.response.json().codigo).to.eql(\"norte\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · crear persona ficticia para esta ejecución",
-          "metaInfo": {
-            "id": "44",
-            "type": "http",
-            "name": "Asignación · crear persona ficticia para esta ejecución"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/personas/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"invitada-{{serie}}\",\n  \"nombre\": \"Mara del Río\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.environment.set(\"invitada\", pm.response.json().id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · incorporar arrendataria en A-01",
-          "metaInfo": {
-            "id": "45",
-            "type": "http",
-            "name": "Asignación · incorporar arrendataria en A-01"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_duena}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"arrendatario\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de rol\", function () { pm.expect(pm.response.json().rol).to.eql(\"arrendatario\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · verificar persistencia y guardar estado",
-          "metaInfo": {
-            "id": "46",
-            "type": "http",
-            "name": "Asignación · verificar persistencia y guardar estado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"La arrendataria quedó vinculada\", function () { pm.expect(pm.response.json().some(f => f.persona === Number(pm.environment.get(\"invitada\")) && f.rol === \"arrendatario\")).to.be.true; });",
-                  "pm.environment.set(\"antes_casa\", JSON.stringify(pm.response.json()));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · rechazar segundo rol en la misma vivienda",
-          "metaInfo": {
-            "id": "47",
-            "type": "http",
-            "name": "Asignación · rechazar segundo rol en la misma vivienda"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_duena}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"conviviente\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · comprobar estado tras duplicado",
-          "metaInfo": {
-            "id": "48",
-            "type": "http",
-            "name": "Asignación · comprobar estado tras duplicado"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Vínculos y roles idénticos\", function () { pm.expect(pm.response.json()).to.eql(JSON.parse(pm.environment.get(\"antes_casa\"))); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · guardar estado de S-02",
-          "metaInfo": {
-            "id": "49",
-            "type": "http",
-            "name": "Asignación · guardar estado de S-02"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"antes_sur\", JSON.stringify(pm.response.json()));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · rechazar operación en vivienda ajena",
-          "metaInfo": {
-            "id": "50",
-            "type": "http",
-            "name": "Asignación · rechazar operación en vivienda ajena"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_duena}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"arrendatario\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Asignación · comprobar estado tras denegación",
-          "metaInfo": {
-            "id": "51",
-            "type": "http",
-            "name": "Asignación · comprobar estado tras denegación"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"S-02 conserva todos los vínculos\", function () { pm.expect(pm.response.json()).to.eql(JSON.parse(pm.environment.get(\"antes_sur\"))); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Alcance · trabajador ve solo su terreno",
-          "metaInfo": {
-            "id": "52",
-            "type": "http",
-            "name": "Alcance · trabajador ve solo su terreno"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_trabajador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/terrenos/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Solo Parque Norte\", function () { pm.expect(pm.response.json().map(f => f.codigo)).to.eql([\"norte\"]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Alcance · trabajador sin vivienda",
-          "metaInfo": {
-            "id": "53",
-            "type": "http",
-            "name": "Alcance · trabajador sin vivienda"
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_trabajador}}"
-              }
-            ],
-            "url": "{{baseUrl}}/api/viviendas/"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Listado vacío\", function () { pm.expect(pm.response.json()).to.eql([]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Accesos · App próxima",
-          "metaInfo": {
-            "id": "54",
-            "type": "http",
-            "name": "Accesos · App próxima"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_trabajador}}"
+                "value": "Bearer {{access}}"
               },
               {
                 "key": "Content-Type",
@@ -2110,19 +295,21 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"autorizado\"); });",
-                  "pm.test(\"Valor guardado de permitido\", function () { pm.expect(pm.response.json().permitido).to.eql(true); });"
+                  "pm.test(\"La API identifica la persona del token\", function () { pm.expect(pm.response.json().persona).to.eql(Number(pm.environment.get(\"persona\"))); });",
+                  "pm.test(\"Decisión para este punto\", function () { pm.expect(pm.response.json().permitido).to.eql(true); });",
+                  "pm.test(\"Motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"autorizado\"); });",
+                  "pm.environment.set(\"alta\", pm.response.json().id);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Accesos · App en otro punto",
+          "name": "Intentar la puerta de servicio",
           "metaInfo": {
-            "id": "55",
+            "id": "8",
             "type": "http",
-            "name": "Accesos · App en otro punto"
+            "name": "Intentar la puerta de servicio"
           },
           "request": {
             "method": "POST",
@@ -2133,7 +320,7 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{jwt_trabajador}}"
+                "value": "Bearer {{access}}"
               },
               {
                 "key": "Content-Type",
@@ -2158,19 +345,21 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso_punto\"); });",
-                  "pm.test(\"Valor guardado de permitido\", function () { pm.expect(pm.response.json().permitido).to.eql(false); });"
+                  "pm.test(\"La API identifica la persona del token\", function () { pm.expect(pm.response.json().persona).to.eql(Number(pm.environment.get(\"persona\"))); });",
+                  "pm.test(\"Decisión para este punto\", function () { pm.expect(pm.response.json().permitido).to.eql(false); });",
+                  "pm.test(\"Motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"sin_permiso_punto\"); });",
+                  "pm.environment.set(\"baja\", pm.response.json().id);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Accesos · App distante",
+          "name": "Asignar como residente",
           "metaInfo": {
-            "id": "56",
+            "id": "9",
             "type": "http",
-            "name": "Accesos · App distante"
+            "name": "Asignar como residente"
           },
           "request": {
             "method": "POST",
@@ -2181,17 +370,17 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{jwt_trabajador}}"
+                "value": "Bearer {{access}}"
               },
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/accesos/solicitudes/",
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"medio\": \"app\",\n  \"punto\": \"{{principal}}\",\n  \"cerca\": false\n}",
+              "raw": "{\n  \"persona\": \"{{persona}}\",\n  \"rol\": \"conviviente\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2205,119 +394,18 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"fuera_de_proximidad\"); });",
-                  "pm.test(\"Valor guardado de permitido\", function () { pm.expect(pm.response.json().permitido).to.eql(false); });"
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Accesos · RFID de Luz",
+          "name": "Mi historial",
           "metaInfo": {
-            "id": "57",
+            "id": "10",
             "type": "http",
-            "name": "Accesos · RFID de Luz"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/accesos/solicitudes/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"medio\": \"rfid\",\n  \"punto\": \"{{principal}}\",\n  \"uid\": \"DEMO-RFID-LUZ\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"autorizado\"); });",
-                  "pm.test(\"Valor guardado de permitido\", function () { pm.expect(pm.response.json().permitido).to.eql(true); });",
-                  "pm.environment.set(\"evento\", pm.response.json().id);",
-                  "pm.environment.set(\"fecha\", pm.response.json().fecha.slice(0,10));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Accesos · RFID desconocido",
-          "metaInfo": {
-            "id": "58",
-            "type": "http",
-            "name": "Accesos · RFID desconocido"
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/accesos/solicitudes/",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"medio\": \"rfid\",\n  \"punto\": \"{{principal}}\",\n  \"uid\": \"DEMO-SIN-TITULAR\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"Valor guardado de motivo\", function () { pm.expect(pm.response.json().motivo).to.eql(\"credencial_desconocida\"); });",
-                  "pm.test(\"Valor guardado de permitido\", function () { pm.expect(pm.response.json().permitido).to.eql(false); });",
-                  "pm.test(\"Valor guardado de persona\", function () { pm.expect(pm.response.json().persona).to.eql(null); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Historial · recuperar el intento por cuatro filtros",
-          "metaInfo": {
-            "id": "59",
-            "type": "http",
-            "name": "Historial · recuperar el intento por cuatro filtros"
+            "name": "Mi historial"
           },
           "request": {
             "method": "GET",
@@ -2328,10 +416,10 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{jwt_operador}}"
+                "value": "Bearer {{access}}"
               }
             ],
-            "url": "{{baseUrl}}/api/historial/?persona={{trabajador}}&terreno={{norte}}&punto={{principal}}&fecha={{fecha}}"
+            "url": "{{baseUrl}}/api/historial/"
           },
           "event": [
             {
@@ -2340,7 +428,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Incluye el intento RFID registrado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"evento\")))).to.be.true; });"
+                  "const ids = pm.response.json().map(i => i.id);",
+                  "pm.test(\"Ambos intentos quedaron registrados\", function () { pm.expect(ids).to.include.members([Number(pm.environment.get(\"alta\")), Number(pm.environment.get(\"baja\"))]); });"
                 ]
               }
             }
