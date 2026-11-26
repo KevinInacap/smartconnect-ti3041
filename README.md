@@ -8,13 +8,13 @@ Una persona puede administrar una casa en Parque Norte, arrendar un departamento
 
 [Instalación](#instalación-local) · [Modelo de datos](#modelo-de-datos) · [Colección de Apidog](apidog/SmartConnect.json) · [Contrato OpenAPI](esquema.yaml) · [Evidencia de ejecución](docs/evidencia-apidog.txt)
 
-## Qué se demuestra
+## Funciones verificadas
 
-| Criterio de la rúbrica | Demostración reproducible | Evidencia observable |
-|---|---|---|
-| Cuatro CRUD maestros · 10 puntos | Personas, terrenos, viviendas y puntos de acceso. La colección crea, lista, consulta, reemplaza, modifica y elimina un registro de cada maestro. | Un segundo GET recupera el cambio. La baja devuelve 204 y la consulta posterior 404. Un terreno con viviendas devuelve 409 y sigue disponible. |
-| Operación de negocio · 10 puntos | Alba incorpora a una arrendataria en A-01. Se vuelve a intentar con otro rol y después en S-02, donde Alba solo arrienda. | El alta devuelve 201. El duplicado devuelve 409 y la falta de autoridad 403. Apidog compara los listados completos antes y después de cada rechazo. |
-| JWT y permisos · 10 puntos | Se obtienen access y refresh, se utiliza el access renovado y se consulta el catálogo desde cuentas distintas. | Sin token se obtiene 401. La trabajadora ve Norte y cero viviendas. Su permiso para usar el portón principal es independiente de su acceso al catálogo. |
+| Operación | Resultado observable |
+|---|---|
+| Mantener personas, terrenos, viviendas y puntos | Una segunda consulta devuelve el cambio guardado. Borrar un registro libre devuelve 204. Borrar un terreno con viviendas devuelve 409. |
+| Asignar residentes a una vivienda | El propietario administrador puede vincular a una persona como arrendataria o conviviente. Un duplicado devuelve 409 y una cuenta sin autoridad recibe 403. |
+| Entrar por un punto | La API identifica a la persona por JWT o por su tarjeta. Cada intento registra la decisión, su motivo, el punto y la hora. |
 
 ## Instalación local
 
@@ -30,7 +30,7 @@ python -m venv .venv
 .\.venv\Scripts\python manage.py runserver 127.0.0.1:8000 --insecure
 ```
 
-En macOS o Linux, el ejecutable del entorno es `.venv/bin/python`. El argumento `--insecure` de **runserver** sirve los archivos estáticos locales de Swagger y Django Admin con DEBUG desactivado. Este procedimiento está pensado para la revisión en el equipo.
+Si estás revisando el pull request antes de su integración, después de `cd smartconnect-ti3041` selecciona `git switch mejora/roles-y-acceso` para disponer de la cuenta de Elena. En macOS o Linux, el ejecutable del entorno es `.venv/bin/python`. El argumento `--insecure` de **runserver** sirve los archivos estáticos locales de Swagger y Django Admin con DEBUG desactivado.
 
 Abre [Swagger UI local](http://127.0.0.1:8000/api/docs/). En **POST /api/token/** pulsa **Try it out**, introduce una cuenta de la tabla siguiente y la clave que imprimió la semilla. Copia el valor de `access`, pulsa **Authorize** y pega el token. Para renovarlo, envía `{"refresh": "valor del refresh"}` a **POST /api/token/refresh/** y vuelve a autorizar con el nuevo access.
 
@@ -42,9 +42,10 @@ Abre [Swagger UI local](http://127.0.0.1:8000/api/docs/). En **POST /api/token/*
 | `demo_gestora` | Inés Rojas | Administra dos terrenos y sus viviendas y puntos. La incorporación de residentes exige un rol propio en la vivienda. |
 | `demo_duena` | Alba Soto | Propietaria administradora de la casa A-01 en Norte y arrendataria del departamento S-02 en Sur. Puede incorporar residentes en A-01. |
 | `demo_residente` | Darío Vega | Propietario administrador de S-02. Puede consultar su terreno y esa vivienda. |
+| `demo_vecina` | Elena Vidal | Arrendataria de A-01 con cuenta estándar. Entra por N-01, recibe una denegación en N-02 y carece de permiso para asignar residentes. |
 | `demo_trabajador` | Luz Mora | Trabaja en Norte sin vivienda asociada. Tiene permiso para N-01. N-02 produce una denegación. |
 
-La semilla genera una clave local compartida por las cuentas nuevas. Puedes fijarla mediante `SMARTCONNECT_DEMO_PASSWORD` antes de la primera ejecución. Repetir la semilla conserva las claves y los vínculos existentes. Para añadir cuentas desde [Django Admin](http://127.0.0.1:8000/admin/), crea un superusuario local con `python manage.py createsuperuser`, crea el usuario con el formulario de Django y selecciónalo en **Persona → Cuenta**. Para recuperar una clave usa `python manage.py changepassword demo_duena` con el entorno activo. La colección usa la misma clave local para las tres cuentas que autentica.
+La semilla genera una clave local compartida por las cuentas nuevas. Puedes fijarla mediante `SMARTCONNECT_DEMO_PASSWORD` antes de la primera ejecución. Repetir la semilla conserva las claves y los vínculos existentes. Para añadir cuentas desde [Django Admin](http://127.0.0.1:8000/admin/), crea un superusuario local con `python manage.py createsuperuser`, crea el usuario con el formulario de Django y selecciónalo en **Persona → Cuenta**. Para recuperar una clave usa `python manage.py changepassword demo_duena` con el entorno activo. La colección de acceso residencial inicia sesión como `demo_vecina`.
 
 ## Modelo de datos
 
@@ -55,6 +56,37 @@ El ER de la implementación se divide en dos vistas que comparten **Persona** y 
 ![Diagrama ER de cuentas, personas, terrenos, viviendas, empleos y participaciones](docs/diagramas/residencia.svg)
 
 Cada vivienda pertenece a un solo terreno. Una persona puede administrar varios terrenos y cada terreno tiene una administradora o administrador responsable. La relación muchos a muchos entre persona y vivienda se materializa en **Participación**. El par persona–vivienda es único y su rol puede ser propietario administrador, propietario, arrendatario o conviviente. **Conviviente** representa a quien vive allí sin ser titular ni arrendatario. **Empleo** conserva el vínculo laboral aunque la persona carezca de vivienda.
+
+### Cómo reconoce el sistema a quien llama
+
+| Pregunta | Dato que lee el servidor | Alcance |
+|---|---|---|
+| ¿Quién inició sesión? | Django valida el usuario y la clave. El access JWT identifica la cuenta y `Persona.cuenta_id` la vincula con su ficha. | Identidad para esta petición. El cliente envía el token. |
+| ¿Puede operar el catálogo global? | `User.is_staff` | El operador gestiona los cuatro maestros. |
+| ¿Administra este terreno? | `Terreno.administrador_id` coincide con la persona. | Mantener viviendas y puntos de ese terreno. |
+| ¿Puede asignar personas a esta vivienda? | Existe la participación de esa persona en **esa vivienda** con `rol = propietario_administrador`. | Incorporar arrendatarios o convivientes. |
+| ¿Puede entrar por este portón? | Para app: persona vinculada a la cuenta, cercanía simulada, vínculo vigente con el terreno del punto y fila en `PermisoPunto` para la persona y el punto exactos. | Autorizar ese intento y registrar la decisión. |
+
+**Ejemplo.** Elena usa su propia cuenta. Su ficha registra que arrienda A-01 y que tiene permiso para el portón N-01. El servidor consulta esas relaciones cuando recibe la petición. Si su cuenta aún carece de ficha, la app registra `sin_persona`. Si falta la relación territorial o el permiso específico, registra el motivo correspondiente. Un encargado con los permisos adecuados debe registrar la relación y habilitar el punto durante el alta. Los puntos del modelo actual pertenecen al terreno: el ejemplo representa el portón del conjunto donde está su casa.
+
+```mermaid
+flowchart TD
+    JWT["Solicitud desde la app"] --> T{"¿Token válido?"}
+    T -->|No| R["401 · requiere sesión"]
+    T -->|Sí| P{"¿Cuenta vinculada a una persona?"}
+    P -->|No| D["Guardar intento denegado con su motivo"]
+    P -->|Sí| C{"¿Está cerca del punto?"}
+    C -->|No| D
+    C -->|Sí| V{"¿Vivienda, empleo o administración en ese terreno?"}
+    V -->|No| D
+    V -->|Sí| G{"¿Permiso para esa persona y ese punto?"}
+    G -->|No| D
+    G -->|Sí| A["Guardar intento autorizado"]
+    classDef ok fill:#e0f4ee,stroke:#186556,color:#143c33
+    classDef stop fill:#fff0eb,stroke:#9a402a,color:#632d20
+    class A ok
+    class R,D stop
+```
 
 ### Autorización y trazabilidad
 
@@ -100,6 +132,8 @@ sequenceDiagram
 
 El operador da de alta a la persona en el catálogo. El propietario administrador utiliza su ID para asignarla como arrendataria o conviviente. La designación inicial de propietarios se gestiona en Django Admin por personal autorizado. La regla de la API se comprueba incluso si el solicitante tiene acceso administrativo al catálogo.
 
+Para habilitar a un nuevo residente, vincula su cuenta con su ficha de persona en Django Admin, asígnale su rol en la vivienda y registra un **Permiso por punto** con su persona y el portón autorizado. A partir de ese momento puede entrar con sus propias credenciales cada vez que se cumplan las condiciones de acceso.
+
 ## Referencia de la API
 
 Todas las rutas de negocio requieren `Authorization: Bearer <access>`. Las cuatro colecciones maestras aceptan GET y POST. Cada ruta con `{id}/` acepta GET, PUT, PATCH y DELETE.
@@ -116,31 +150,21 @@ Todas las rutas de negocio requieren `Authorization: Bearer <access>`. Las cuatr
 
 **Cómo leer las respuestas.** Un 201 en solicitudes de acceso confirma que se guardó el intento. Revisa `permitido` y `motivo` para saber la decisión. Un 403 en una operación administrativa indica que la cuenta carece de autoridad. Las consultas de detalle fuera del listado visible devuelven 404. Los datos inválidos devuelven 400.
 
-## Defensa en Apidog
+## Usar Apidog con la API local
 
-1. Arranca el servidor e importa [la colección](apidog/SmartConnect.json) en Apidog con la opción de importación de colecciones Postman. Para explorar las operaciones y sus tipos también puedes importar [OpenAPI](esquema.yaml).
-2. Configura `baseUrl` como `http://127.0.0.1:8000` y `demoPassword` con la clave local de la semilla. Los scripts guardan access, refresh e IDs en el entorno durante el recorrido.
-3. Ejecuta la carpeta **Defensa acumulativa** en orden. Para reproducir exactamente el recorrido verificado, usa el CLI oficial desde la raíz del repositorio en una segunda terminal:
+1. Con el servidor en marcha, abre Apidog de escritorio. En el proyecto entra en **Settings → Import Data**, selecciona [SmartConnect.json](apidog/SmartConnect.json), elige el formato **Postman** si te lo pregunta y confirma. Para trabajar en tu propio equipo también puedes abrir **Offline Space**. [Importación de archivos](https://docs.apidog.com/en/manual-import-633884m0) · [Offline Space](https://docs.apidog.com/en/offline-space-1302680m0)
+2. Selecciona un entorno local. Configura `baseUrl` con `http://127.0.0.1:8000` y el **valor local** de `demoPassword` con la clave de la semilla. Verifica que la URL final para el login sea `http://127.0.0.1:8000/api/token/`. [Variables de entorno](https://docs.apidog.com/en/environment-management-584758m0)
+3. Abre la carpeta **Acceso de una residente**. Pulsa **Send** en cada petición en el orden de la colección. **Iniciar sesión** obtiene los tokens, **Renovar sesión** guarda el access renovado y las consultas posteriores guardan en el entorno los ID reales. Si el access vence, vuelve a ejecutar **Renovar sesión**.
+4. En **Mi rol en A-01** verás `rol: arrendatario`. En **Entrar por el portón** verás `permitido: true`; en **Intentar la puerta de servicio**, `permitido: false`. Las dos respuestas tienen estado 201 porque ambas crearon un intento. **Asignar como residente** devuelve 403 y **Mi historial** muestra ambas decisiones.
+5. Para trabajar con los cuatro CRUD, importa también [esquema.yaml](esquema.yaml) como **OpenAPI** en un proyecto o módulo separado, con la misma URL base. Envía **POST /api/token/** con `demo_operador`, copia el `access` y úsalo en **Auth → Bearer Token**. En `/api/personas/`, por ejemplo, crea una persona con `{"codigo":"visita-01","nombre":"Visita de prueba"}` y consulta `GET /api/personas/{id}/` con el ID recibido. Usa un código nuevo por ejecución.
+
+Para ejecutar la colección local con el cliente oficial de consola:
 
 ```powershell
 $clave = Read-Host "Clave local de la semilla"
 npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --env-var "demoPassword=$clave" --lang en
 ```
 
-Cada corrida usa códigos nuevos, borra sus cuatro registros temporales y conserva una arrendataria de demostración y cinco intentos de acceso para que el docente pueda consultarlos después. La colección descubre los IDs de la semilla por código.
-
-Para repetir las pruebas de Django con una base temporal:
-
-```powershell
-.\.venv\Scripts\python manage.py test -v 2
-.\.venv\Scripts\python manage.py makemigrations --check --dry-run
-.\.venv\Scripts\python manage.py spectacular --validate --fail-on-warn
-```
-
-### Evidencia, defensa oral y siguiente avance
-
-La ejecución local registrada completó **59 solicitudes HTTP y 98 aserciones en Apidog CLI**, con cero fallos. Django ejecutó **8 pruebas de integración**. El historial público de trabajo incluye [la implementación de la API](https://github.com/KevinInacap/smartconnect-ti3041/pull/1) y la pestaña [Pull requests](https://github.com/KevinInacap/smartconnect-ti3041/pulls?q=is%3Apr+is%3Amerged). Para identificar la versión entregada, consulta la etiqueta `avance-2` y ejecuta `git rev-parse avance-2^{commit}` en Git Bash.
-
-En la defensa, muestra primero el cambio de rol por vivienda, luego el rechazo y la relectura de la BD, y finalmente el historial de Luz. Cada integrante debe identificar su aporte real y explicar una decisión del flujo.
+El recorrido envía diez peticiones. Cada ejecución guarda dos intentos que después aparecen en el historial de Elena. Para probar el backend con una base temporal, ejecuta `.\.venv\Scripts\python manage.py test -v 2`. [Evidencia de Apidog](docs/evidencia-apidog.txt) · [Pruebas de integración](residencial/tests.py)
 
 **Supuestos para revisar con el docente.** El conviviente tiene un rol explícito. Los permisos se asignan por punto y se comprueba el vínculo territorial en cada intento. La app declara la proximidad para la práctica y el operador representa al lector RFID. En la integración posterior corresponde acordar cómo verificar la ubicación, autenticar el dispositivo y registrar por separado la confirmación física de apertura.
