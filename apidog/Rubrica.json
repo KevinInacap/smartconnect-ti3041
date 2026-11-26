@@ -219,7 +219,10 @@
                   "const norte = pm.response.json().find(f => f.codigo === \"norte\");",
                   "pm.test(\"Existe el terreno de la semilla\", function () { pm.expect(norte).to.exist; });",
                   "pm.environment.set(\"norte\", norte.id);",
-                  "pm.environment.set(\"gestora\", norte.administrador);"
+                  "pm.environment.set(\"gestora\", norte.administrador);",
+                  "const sur = pm.response.code === 200 && pm.response.json().find(f => f.codigo === \"sur\");",
+                  "pm.test(\"El operador ve Mirador Sur\", function () { pm.expect(sur && sur.id).to.be.a(\"number\"); });",
+                  "if (sur) pm.environment.set(\"sur\", sur.id);"
                 ]
               }
             }
@@ -255,7 +258,10 @@
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
                   "const casa = pm.response.json().find(f => f.codigo === \"A-01\" && f.terreno === Number(pm.environment.get(\"norte\")));",
                   "pm.test(\"Existe la vivienda en ese terreno\", function () { pm.expect(casa).to.exist; });",
-                  "pm.environment.set(\"casa\", casa.id);"
+                  "pm.environment.set(\"casa\", casa.id);",
+                  "const depto = pm.response.code === 200 && pm.response.json().find(f => f.codigo === \"S-02\" && f.terreno === Number(pm.environment.get(\"sur\")));",
+                  "pm.test(\"El operador ve S-02 en Mirador Sur\", function () { pm.expect(depto && depto.id).to.be.a(\"number\"); });",
+                  "if (depto) pm.environment.set(\"depto\", depto.id);"
                 ]
               }
             }
@@ -1881,7 +1887,192 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Parque Norte es visible para Scarlett\", function () { pm.expect(pm.response.json().some(t => t.id === Number(pm.environment.get(\"norte\")))).to.be.true; });"
+                  "pm.test(\"Scarlett ve Parque Norte y Mirador Sur queda fuera de su alcance\", function () {",
+                  "  const ids = pm.response.json().map(t => t.id);",
+                  "  pm.expect(ids).to.include(Number(pm.environment.get(\"norte\")));",
+                  "  pm.expect(ids).to.not.include(Number(pm.environment.get(\"sur\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alcance · Scarlett solo ve su ficha personal",
+          "metaInfo": {
+            "id": "49",
+            "type": "http",
+            "name": "Alcance · Scarlett solo ve su ficha personal"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_scarlett}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Solo se devuelve aula-scarlett\", function () { pm.expect(pm.response.json().map(p => p.codigo)).to.eql([\"aula-scarlett\"]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alcance · Scarlett no ve S-02",
+          "metaInfo": {
+            "id": "50",
+            "type": "http",
+            "name": "Alcance · Scarlett no ve S-02"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_scarlett}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{depto}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · consultar los vínculos originales de S-02",
+          "metaInfo": {
+            "id": "51",
+            "type": "http",
+            "name": "Asignación · consultar los vínculos originales de S-02"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) pm.environment.set(\"antes_depto\", JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · Kevin no administra S-02",
+          "metaInfo": {
+            "id": "52",
+            "type": "http",
+            "name": "Asignación · Kevin no administra S-02"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"arrendatario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · verificar S-02 tras el rechazo 403",
+          "metaInfo": {
+            "id": "53",
+            "type": "http",
+            "name": "Asignación · verificar S-02 tras el rechazo 403"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{depto}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"S-02 conserva sus vínculos y roles\", function () { pm.expect(pm.response.json()).to.eql(JSON.parse(pm.environment.get(\"antes_depto\"))); });"
                 ]
               }
             }

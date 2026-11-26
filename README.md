@@ -10,7 +10,7 @@ Una persona puede administrar una casa en Parque Norte, arrendar un departamento
 
 ## Empezar en el PC de clase
 
-Si ya tienes la copia preparada en Windows, abre **Iniciar SmartConnect.cmd** con doble clic. El archivo prepara el entorno con Python 3.13, aplica las migraciones, carga los usuarios ficticios e inicia Django en el puerto 8000. Mantén abierta la ventana si acaba de arrancar el servidor. [Archivo de inicio](<Iniciar SmartConnect.cmd>)
+Si ya tienes la copia preparada en Windows, abre **Iniciar SmartConnect.cmd** con doble clic. El archivo usa el Python del equipo, aplica las migraciones, carga los usuarios ficticios e inicia Django en el puerto 8000. Mantén abierta la ventana si acaba de arrancar el servidor. [Archivo de inicio](<Iniciar SmartConnect.cmd>)
 
 - **Apidog** envía las peticiones al servidor de este PC. Abre el proyecto **SmartConnect · Acceso residencial** y selecciona el entorno que apunta a `http://127.0.0.1:8000`. [Proyecto de la clase](https://app.apidog.com/project/1420338)
 - **Historial** muestra los últimos 50 intentos visibles para la cuenta. Abre la página en otra pestaña, inicia sesión como Scarlett y déjala abierta para la demostración. [Historial en este PC](http://127.0.0.1:8000/historial/)
@@ -33,28 +33,28 @@ Abre al mismo tiempo **Apidog** y el **Historial**. Las peticiones de la carpeta
 |---|---|
 | 1. **Viviendas sin sesión** | `401`. La API exige que la persona se identifique. |
 | 2–3. **Iniciar sesión** y **Renovar sesión** | `200`. El login de Scarlett entrega `access` y `refresh`. El siguiente paso obtiene un nuevo `access`. Apidog lo envía en el encabezado `Authorization: Bearer …`. |
-| 4–6. **Mis viviendas**, **Mi rol en A-01** y **Puntos de mi terreno** | Se ve A-01, su rol de arrendataria y los dos puntos de Parque Norte. Conocer un punto y tener permiso para utilizarlo son dos comprobaciones distintas. |
-| 7. **Entrar por el portón** | `201`, `permitido: true`, `motivo: autorizado`. Lee el `id` de la respuesta. Cambia a la pestaña Historial y busca la fila con ese mismo ID, Scarlett y N-01. Se actualiza cada tres segundos mientras está visible. |
-| 8. **Intentar la puerta de servicio** | `201`, `permitido: false`, `motivo: sin_permiso_punto`. El segundo ID aparece como **Denegado** junto a N-02. El 201 indica que se guardó el intento. |
-| 9–10. **Asignar como residente** y **Mi historial** | `403` al intentar asignar a otra persona. Con **Mi historial** se recuperan ambos intentos en JSON. |
+| 4–7. **Mi terreno**, **Mis viviendas**, **Mi rol en A-01** y **Puntos de mi terreno** | Se identifica Parque Norte, su vivienda A-01, su rol de arrendataria y los dos puntos de ese terreno. Conocer un punto y tener permiso para utilizarlo son dos comprobaciones distintas. |
+| 8. **Entrar por el portón** | `201`, `permitido: true`, `motivo: autorizado`. Lee el `id` de la respuesta. Cambia a la pestaña Historial y busca la fila con ese mismo ID, Scarlett y N-01. Se actualiza cada tres segundos mientras está visible. |
+| 9. **Intentar la puerta de servicio** | `201`, `permitido: false`, `motivo: sin_permiso_punto`. El segundo ID aparece como **Denegado** junto a N-02. El 201 indica que se guardó el intento. |
+| 10–11. **Asignar como residente** y **Mi historial** | `403` al intentar asignar a otra persona. Con **Mi historial** se recuperan ambos intentos en JSON. |
 
 **Para explicar la persistencia:** “Apidog envió un POST. Django identificó la cuenta por su JWT, comprobó el permiso del punto y guardó la decisión en SQLite. El GET del historial y el panel consultan esa misma fila. Aquí se ve el mismo ID”. El login y las consultas GET no crean intentos. La proximidad se simula con `cerca`. La confirmación de una apertura física corresponde a la integración del dispositivo.
 
-**Para mostrar la rúbrica completa**, usa la colección **Rúbrica**. La cuenta de Kevin crea, lista, consulta, actualiza y elimina un registro de cada maestro. Primero enseña un PUT seguido de un GET con el mismo ID. Luego muestra la asignación de una persona a A-01 (201), el segundo intento de asignarla (409) y la operación sin autoridad de Scarlett (403). Las relecturas verifican que los rechazos conservaron las relaciones. El recorrido utiliza códigos nuevos por ejecución y conserva la asignación de ejemplo. [Colección con los cuatro CRUD y la operación de negocio](apidog/Rubrica.json)
+**Para mostrar la rúbrica completa**, usa la colección **Rúbrica**. Kevin ejecuta los cuatro CRUD y asigna a una arrendataria en A-01 (`201`). El duplicado recibe `409`. Scarlett recibe `403` al asignar en A-01 y Kevin recibe `403` al intentar asignar en S-02, donde carece del rol de propietario administrador. Las relecturas verifican que los rechazos conservaron las relaciones. El recorrido utiliza códigos nuevos por ejecución y conserva la asignación de ejemplo. [Colección con los cuatro CRUD y la operación de negocio](apidog/Rubrica.json)
 
 ### Preparación en otro equipo
 
-Con Python 3.13, Git y, para ejecutar las colecciones por consola, Node.js con npm, clona la versión del pull request:
+Con Python 3.12 o 3.13, Git y, para ejecutar las colecciones por consola, Node.js con npm, clona el repositorio.
 
 ```powershell
-git clone --branch fix/demo-clase https://github.com/KevinInacap/smartconnect-ti3041.git
+git clone https://github.com/KevinInacap/smartconnect-ti3041.git
 cd smartconnect-ti3041
 & '.\Iniciar SmartConnect.cmd'
 ```
 
 La instalación manual equivalente empieza con `python -m venv .venv`. Activa ese entorno y ejecuta `python -m pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py seed_demo --aula` y `python manage.py runserver 127.0.0.1:8000 --insecure`. Django usa el argumento `--insecure` para servir los archivos estáticos locales de Swagger y Admin durante la práctica.
 
-En un proyecto nuevo de Apidog, importa [SmartConnect.json](apidog/SmartConnect.json) como colección Postman. Para el recorrido largo importa [Rubrica.json](apidog/Rubrica.json) en un módulo o proyecto aparte a fin de conservar los nombres de peticiones que comparten método y URL. Puedes importar también [el contrato OpenAPI](esquema.yaml). Usa `http://127.0.0.1:8000` como URL base del servicio y valor de `baseUrl` si el importador mantiene la variable. [Guía de importación](https://docs.apidog.com/en/manual-import-633884m0)
+En Apidog, importa [SmartConnect.json](apidog/SmartConnect.json) y [Rubrica.json](apidog/Rubrica.json) como colecciones Postman en módulos separados. Conserva los casos con el mismo método y URL, junto con sus postprocesadores. El [contrato OpenAPI](esquema.yaml) documenta los endpoints y sus respuestas. Usa `http://127.0.0.1:8000` como URL base del entorno local y como valor de `baseUrl` si las peticiones importadas usan esa variable. [Guía de importación de Postman](https://docs.apidog.com/import-from-postman-635043m0)
 
 **Si hay un error en Apidog**
 
@@ -63,7 +63,7 @@ En un proyecto nuevo de Apidog, importa [SmartConnect.json](apidog/SmartConnect.
 | Error de conexión | Abre el historial local. Si tampoco carga, inicia SmartConnect en ese mismo PC. En Apidog web selecciona un agente local que pueda llegar a localhost, o abre el proyecto en Apidog de escritorio. |
 | `401` en **Iniciar sesión** | Revisa el cuerpo JSON de **POST /api/token/**. Usa el usuario y la clave de Scarlett de la tabla. Si el cuerpo todavía contiene `{{demoPassword}}`, estás usando una copia anterior. |
 | `401` después de un login correcto | Selecciona el mismo entorno y vuelve a ejecutar login y renovación. En las rutas protegidas revisa el encabezado Bearer y que los postprocesadores estén habilitados. |
-| `400` o una URL con `{{casa}}` o `{{principal}}` sin resolver | Ejecuta las consultas 4 a 6 en orden. Son las que obtienen los ID de **tu** base de datos. |
+| `400` o una URL con `{{casa_residente}}` o `{{principal}}` sin resolver | Ejecuta las consultas 4 a 7 en orden. Son las que obtienen los ID de **tu** base de datos. |
 | Apidog marca en rojo «se esperaba 200» | Mira el **estado real**, el **Body** y el paso de la guía. Algunas definiciones importadas tienen validación genérica de éxito 200. Para las aperturas el resultado esperado es 201, y en las pruebas de rechazo se esperan 401, 403 o 409 según el caso. Las aserciones de la colección comprueban esos códigos. |
 
 ## Modelo de datos
@@ -122,34 +122,48 @@ Cada punto pertenece a un terreno. **Permiso por punto** vincula una persona con
 
 Fuentes editables de los diagramas y esquema ejecutable: [residencia](docs/diagramas/residencia.dot), [accesos](docs/diagramas/accesos.dot) y [migración inicial](residencial/migrations/0001_initial.py).
 
-## Operación de negocio
+## Comprobación de permisos por operación
 
 ```mermaid
-sequenceDiagram
-    actor A as Alba
-    participant API as API SmartConnect
-    participant BD as Base de datos
-    A->>API: POST asignaciones con access, persona y rol
-    API->>API: Validar token e identificar la cuenta
-    alt Token ausente o inválido
-        API-->>A: 401
-    else Cuenta autenticada
-        API->>BD: Consultar rol de Alba en esta vivienda
-        alt Alba administra la vivienda
-            API->>BD: Crear vínculo único en una transacción
-            alt Primera asignación
-                BD-->>API: Vínculo persistido
-                API-->>A: 201 y registro creado
-            else La persona ya está vinculada
-                API-->>A: 409 y rol original conservado
-            end
-        else Falta autoridad sobre la vivienda
-            API-->>A: 403
-        end
-    end
+flowchart TD
+    Peticion["Petición a una ruta protegida"] --> Token{"¿Access JWT válido?"}
+    Token -->|No| SinSesion["401 · iniciar sesión"]
+    Token -->|Sí| Operacion{"¿Qué operación solicita la cuenta?"}
+
+    Operacion -->|Modificar un maestro| Staff{"¿La cuenta tiene is_staff?"}
+    Staff -->|Sí| Maestro["Puede modificar el maestro"]
+    Staff -->|No| Terreno{"¿Es vivienda o punto de acceso<br/>de un terreno que administra?"}
+    Terreno -->|Sí| Maestro
+    Terreno -->|No| SinPermiso["403 · falta permiso para esa operación"]
+
+    Operacion -->|Asignar a una vivienda| Existe{"¿Existe la vivienda?"}
+    Existe -->|No| NoVisible["404 · recurso no disponible"]
+    Existe -->|Sí| Participacion{"¿Su rol en esa vivienda es<br/>propietario_administrador?"}
+    Participacion -->|No| SinPermiso
+    Participacion -->|Sí| Datos{"¿Persona y rol de destino válidos?"}
+    Datos -->|No| Invalido["400 · revisar los datos"]
+    Datos -->|Sí| Duplicado{"¿La persona ya está vinculada?"}
+    Duplicado -->|Sí| Conflicto["409 · conserva el vínculo anterior"]
+    Duplicado -->|No| Creada["201 · crea la participación"]
+
+    Operacion -->|Consultar datos| Alcance["Lectura según su alcance<br/>catálogo, terreno o datos propios"]
+    classDef permite fill:#e0f4ee,stroke:#186556,color:#143c33
+    classDef rechaza fill:#fff0eb,stroke:#9a402a,color:#632d20
+    class Maestro,Creada,Alcance permite
+    class SinSesion,SinPermiso,NoVisible,Invalido,Conflicto rechaza
 ```
 
-El operador da de alta a la persona en el catálogo. El propietario administrador utiliza su ID para asignarla como arrendataria o conviviente. La designación inicial de propietarios se gestiona en Django Admin por personal autorizado. La regla de la API se comprueba incluso si el solicitante tiene acceso administrativo al catálogo.
+`is_staff` da acceso global al catálogo. `Terreno.administrador_id` da autoridad sobre las viviendas y los puntos de ese terreno. `Participacion.rol` da autoridad para asignar arrendatarios o convivientes en una vivienda concreta. Una cuenta puede reunir varios permisos. El JWT identifica la cuenta y la API consulta sus permisos para cada operación.
+
+| Cuenta en Apidog | Operación | Respuesta esperada |
+|---|---|---|
+| Sin sesión | `GET /api/viviendas/` | `401` |
+| Kevin, operador global | `POST /api/personas/` | `201` con los datos válidos |
+| Kevin, propietario administrador de A-01 | `POST /api/viviendas/{id}/asignaciones/` para A-01 | `201` con la primera asignación y `409` al repetirla |
+| Kevin, sin autoridad sobre S-02 | La misma asignación para S-02 | `403` |
+| Scarlett, arrendataria de A-01 | `GET` y `POST` de asignaciones para A-01 | `200` con su propio vínculo y `403` al intentar asignar |
+
+El operador da de alta a la persona en el catálogo. El propietario administrador utiliza su ID para asignarla como arrendataria o conviviente. La designación inicial de propietarios se gestiona en Django Admin por personal autorizado.
 
 Para habilitar a un nuevo residente, vincula su cuenta con su ficha de persona en Django Admin, asígnale su rol en la vivienda y registra un **Permiso por punto** con su persona y el portón autorizado. A partir de ese momento puede entrar con sus propias credenciales cada vez que se cumplan las condiciones de acceso.
 
@@ -181,8 +195,8 @@ npx --yes --package=apidog-cli@2.2.12 apidog run apidog/Rubrica.json --lang en
 
 | Prueba | Resultado verificado |
 |---|---|
-| Acceso de Scarlett · Apidog CLI | 10 peticiones y 18 aserciones aprobadas. [Registro](docs/evidencia-apidog.txt) |
-| Cuatro CRUD, JWT y asignaciones · Apidog CLI | 48 peticiones y 78 aserciones aprobadas. [Registro](docs/evidencia-rubrica.txt) |
+| Acceso de Scarlett · Apidog CLI | 11 peticiones y 23 aserciones aprobadas. [Registro](docs/evidencia-apidog.txt) |
+| Cuatro CRUD, JWT y asignaciones · Apidog CLI | 53 peticiones y 87 aserciones aprobadas. [Registro](docs/evidencia-rubrica.txt) |
 | Backend · Django | 15 pruebas aprobadas, con autenticación, permisos, semilla, altas/rechazos e igualdad de los ID en la API y el panel. |
 
 **Decisión para el siguiente avance.** Las autorizaciones se conceden por persona y punto. La app usa proximidad simulada y el operador representa al lector RFID. La integración física tendrá que registrar una confirmación del dispositivo después de la autorización.

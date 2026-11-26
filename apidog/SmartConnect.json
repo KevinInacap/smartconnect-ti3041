@@ -91,8 +91,13 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"access\", pm.response.json().access);",
-                  "pm.environment.set(\"refresh\", pm.response.json().refresh);"
+                  "for (const clave of [\"access\", \"refresh\", \"terreno_residente\", \"casa_residente\", \"persona\", \"principal\", \"servicio\", \"alta\", \"baja\"]) { pm.environment.unset(clave); }",
+                  "if (pm.response.code === 200) {",
+                  "  const tokens = pm.response.json();",
+                  "  pm.test(\"El login entrega ambos tokens\", function () { pm.expect(tokens).to.include.all.keys(\"access\", \"refresh\"); });",
+                  "  pm.environment.set(\"access\", tokens.access);",
+                  "  pm.environment.set(\"refresh\", tokens.refresh);",
+                  "}"
                 ]
               }
             }
@@ -135,7 +140,43 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"access\", pm.response.json().access);"
+                  "if (pm.response.code === 200) pm.environment.set(\"access\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi terreno",
+          "metaInfo": {
+            "id": "11",
+            "type": "http",
+            "name": "Mi terreno"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const norte = pm.response.code === 200 && pm.response.json().find(t => t.codigo === \"norte\");",
+                  "pm.test(\"Veo Parque Norte\", function () { pm.expect(norte && norte.id).to.be.a(\"number\"); });",
+                  "if (norte) pm.environment.set(\"terreno_residente\", norte.id);"
                 ]
               }
             }
@@ -169,7 +210,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"casa\", pm.response.json().find(v => v.codigo === \"A-01\").id);"
+                  "const norte = Number(pm.environment.get(\"terreno_residente\"));",
+                  "const casa = pm.response.code === 200 && pm.response.json().find(v => v.codigo === \"A-01\" && v.terreno === norte);",
+                  "pm.test(\"A-01 pertenece a Parque Norte\", function () { pm.expect(casa && casa.id).to.be.a(\"number\"); });",
+                  "if (casa) pm.environment.set(\"casa_residente\", casa.id);"
                 ]
               }
             }
@@ -194,7 +238,7 @@
                 "value": "Bearer {{access}}"
               }
             ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+            "url": "{{baseUrl}}/api/viviendas/{{casa_residente}}/asignaciones/"
           },
           "event": [
             {
@@ -203,9 +247,13 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "const vinculo = pm.response.json().find(v => v.rol === \"arrendatario\" && v.vivienda === Number(pm.environment.get(\"casa\")));",
-                  "pm.test(\"Soy arrendataria de A-01\", function () { pm.expect(vinculo).to.exist; });",
-                  "pm.environment.set(\"persona\", vinculo.persona);"
+                  "const vinculos = pm.response.code === 200 ? pm.response.json() : [];",
+                  "const vinculo = vinculos.find(v => v.rol === \"arrendatario\" && v.vivienda === Number(pm.environment.get(\"casa_residente\")));",
+                  "pm.test(\"Solo veo mi vínculo de arrendataria en A-01\", function () {",
+                  "  pm.expect(vinculos).to.have.lengthOf(1);",
+                  "  pm.expect(vinculo && vinculo.persona).to.be.a(\"number\");",
+                  "});",
+                  "if (vinculo) pm.environment.set(\"persona\", vinculo.persona);"
                 ]
               }
             }
@@ -239,8 +287,18 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.environment.set(\"principal\", pm.response.json().find(p => p.codigo === \"N-01\").id);",
-                  "pm.environment.set(\"servicio\", pm.response.json().find(p => p.codigo === \"N-02\").id);"
+                  "const norte = Number(pm.environment.get(\"terreno_residente\"));",
+                  "const puntos = pm.response.code === 200 ? pm.response.json().filter(p => p.terreno === norte) : [];",
+                  "const principal = puntos.find(p => p.codigo === \"N-01\");",
+                  "const servicio = puntos.find(p => p.codigo === \"N-02\");",
+                  "pm.test(\"Veo N-01 y N-02 de Parque Norte\", function () {",
+                  "  pm.expect(principal && principal.id).to.be.a(\"number\");",
+                  "  pm.expect(servicio && servicio.id).to.be.a(\"number\");",
+                  "});",
+                  "if (principal && servicio) {",
+                  "  pm.environment.set(\"principal\", principal.id);",
+                  "  pm.environment.set(\"servicio\", servicio.id);",
+                  "}"
                 ]
               }
             }
@@ -369,7 +427,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
+            "url": "{{baseUrl}}/api/viviendas/{{casa_residente}}/asignaciones/",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"persona\": \"{{persona}}\",\n  \"rol\": \"conviviente\"\n}",
