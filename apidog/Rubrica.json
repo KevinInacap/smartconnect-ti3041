@@ -1,0 +1,1893 @@
+{
+  "apidogCli": "1.1",
+  "info": {
+    "name": "SmartConnect · Comprobación de la rúbrica",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Práctica local con dos cuentas ficticias de aula. El orden conserva las dependencias entre peticiones. Cada ejecución crea cuatro registros temporales que elimina y una arrendataria que queda vinculada a A-01 para verificar la persistencia."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "environment": {
+    "name": "SmartConnect local",
+    "variable": {
+      "values": [
+        {
+          "key": "baseUrl",
+          "value": "http://127.0.0.1:8000"
+        }
+      ]
+    }
+  },
+  "item": [
+    {
+      "name": "CRUD, asignaciones y JWT",
+      "item": [
+        {
+          "name": "JWT · recurso protegido sin token",
+          "metaInfo": {
+            "id": "1",
+            "type": "http",
+            "name": "JWT · recurso protegido sin token"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JWT · iniciar sesión como Kevin",
+          "metaInfo": {
+            "id": "2",
+            "type": "http",
+            "name": "JWT · iniciar sesión como Kevin"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/token/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"aula_kevin\",\n  \"password\": \"Kevin-Aula-TI3041!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El login entrega ambos tokens\", function () { pm.expect(pm.response.json()).to.include.all.keys(\"access\", \"refresh\"); });",
+                  "pm.environment.set(\"rubrica_kevin\", pm.response.json().access);",
+                  "pm.environment.set(\"renovacion\", pm.response.json().refresh);",
+                  "pm.environment.set(\"serie\", String(Date.now()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JWT · iniciar sesión como Scarlett",
+          "metaInfo": {
+            "id": "3",
+            "type": "http",
+            "name": "JWT · iniciar sesión como Scarlett"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/token/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"aula_scarlett\",\n  \"password\": \"Scarlett-Aula-TI3041!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El login entrega ambos tokens\", function () { pm.expect(pm.response.json()).to.include.all.keys(\"access\", \"refresh\"); });",
+                  "pm.environment.set(\"rubrica_scarlett\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JWT · renovar el token de Kevin",
+          "metaInfo": {
+            "id": "4",
+            "type": "http",
+            "name": "JWT · renovar el token de Kevin"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/token/refresh/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{renovacion}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.environment.set(\"rubrica_kevin\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catálogo · localizar terreno Norte",
+          "metaInfo": {
+            "id": "5",
+            "type": "http",
+            "name": "Catálogo · localizar terreno Norte"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const norte = pm.response.json().find(f => f.codigo === \"norte\");",
+                  "pm.test(\"Existe el terreno de la semilla\", function () { pm.expect(norte).to.exist; });",
+                  "pm.environment.set(\"norte\", norte.id);",
+                  "pm.environment.set(\"gestora\", norte.administrador);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catálogo · localizar A-01 en Parque Norte",
+          "metaInfo": {
+            "id": "6",
+            "type": "http",
+            "name": "Catálogo · localizar A-01 en Parque Norte"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const casa = pm.response.json().find(f => f.codigo === \"A-01\" && f.terreno === Number(pm.environment.get(\"norte\")));",
+                  "pm.test(\"Existe la vivienda en ese terreno\", function () { pm.expect(casa).to.exist; });",
+                  "pm.environment.set(\"casa\", casa.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · crear",
+          "metaInfo": {
+            "id": "7",
+            "type": "http",
+            "name": "persona · crear"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"p-{{serie}}\",\n  \"nombre\": \"Marina Lago\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"temporal\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · localizar en listado",
+          "metaInfo": {
+            "id": "8",
+            "type": "http",
+            "name": "persona · localizar en listado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · consultar detalle",
+          "metaInfo": {
+            "id": "9",
+            "type": "http",
+            "name": "persona · consultar detalle"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lago\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · reemplazar con PUT",
+          "metaInfo": {
+            "id": "10",
+            "type": "http",
+            "name": "persona · reemplazar con PUT"
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"p-{{serie}}\",\n  \"nombre\": \"Marina Lagos\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lagos\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · recuperar el valor guardado",
+          "metaInfo": {
+            "id": "11",
+            "type": "http",
+            "name": "persona · recuperar el valor guardado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lagos\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · actualizar con PATCH",
+          "metaInfo": {
+            "id": "12",
+            "type": "http",
+            "name": "persona · actualizar con PATCH"
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Marina Lago\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Marina Lago\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · eliminar",
+          "metaInfo": {
+            "id": "13",
+            "type": "http",
+            "name": "persona · eliminar"
+          },
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "persona · verificar baja",
+          "metaInfo": {
+            "id": "14",
+            "type": "http",
+            "name": "persona · verificar baja"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · crear",
+          "metaInfo": {
+            "id": "15",
+            "type": "http",
+            "name": "terreno · crear"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"t-{{serie}}\",\n  \"nombre\": \"Parque de prueba\",\n  \"administrador\": \"{{gestora}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"temporal\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · localizar en listado",
+          "metaInfo": {
+            "id": "16",
+            "type": "http",
+            "name": "terreno · localizar en listado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · consultar detalle",
+          "metaInfo": {
+            "id": "17",
+            "type": "http",
+            "name": "terreno · consultar detalle"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de prueba\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · reemplazar con PUT",
+          "metaInfo": {
+            "id": "18",
+            "type": "http",
+            "name": "terreno · reemplazar con PUT"
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"t-{{serie}}\",\n  \"nombre\": \"Parque de ensayo\",\n  \"administrador\": \"{{gestora}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de ensayo\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · recuperar el valor guardado",
+          "metaInfo": {
+            "id": "19",
+            "type": "http",
+            "name": "terreno · recuperar el valor guardado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de ensayo\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · actualizar con PATCH",
+          "metaInfo": {
+            "id": "20",
+            "type": "http",
+            "name": "terreno · actualizar con PATCH"
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Parque de prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Parque de prueba\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · eliminar",
+          "metaInfo": {
+            "id": "21",
+            "type": "http",
+            "name": "terreno · eliminar"
+          },
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terreno · verificar baja",
+          "metaInfo": {
+            "id": "22",
+            "type": "http",
+            "name": "terreno · verificar baja"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · crear",
+          "metaInfo": {
+            "id": "23",
+            "type": "http",
+            "name": "vivienda · crear"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"v-{{serie}}\",\n  \"tipo\": \"casa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"temporal\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · localizar en listado",
+          "metaInfo": {
+            "id": "24",
+            "type": "http",
+            "name": "vivienda · localizar en listado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · consultar detalle",
+          "metaInfo": {
+            "id": "25",
+            "type": "http",
+            "name": "vivienda · consultar detalle"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"casa\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · reemplazar con PUT",
+          "metaInfo": {
+            "id": "26",
+            "type": "http",
+            "name": "vivienda · reemplazar con PUT"
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"v-{{serie}}\",\n  \"tipo\": \"departamento\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"departamento\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · recuperar el valor guardado",
+          "metaInfo": {
+            "id": "27",
+            "type": "http",
+            "name": "vivienda · recuperar el valor guardado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"departamento\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · actualizar con PATCH",
+          "metaInfo": {
+            "id": "28",
+            "type": "http",
+            "name": "vivienda · actualizar con PATCH"
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"casa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de tipo\", function () { pm.expect(pm.response.json().tipo).to.eql(\"casa\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · eliminar",
+          "metaInfo": {
+            "id": "29",
+            "type": "http",
+            "name": "vivienda · eliminar"
+          },
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "vivienda · verificar baja",
+          "metaInfo": {
+            "id": "30",
+            "type": "http",
+            "name": "vivienda · verificar baja"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · crear",
+          "metaInfo": {
+            "id": "31",
+            "type": "http",
+            "name": "punto · crear"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"a-{{serie}}\",\n  \"nombre\": \"Puerta de patio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"temporal\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · localizar en listado",
+          "metaInfo": {
+            "id": "32",
+            "type": "http",
+            "name": "punto · localizar en listado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El listado contiene el ID creado\", function () { pm.expect(pm.response.json().some(f => f.id === Number(pm.environment.get(\"temporal\")))).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · consultar detalle",
+          "metaInfo": {
+            "id": "33",
+            "type": "http",
+            "name": "punto · consultar detalle"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta de patio\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · reemplazar con PUT",
+          "metaInfo": {
+            "id": "34",
+            "type": "http",
+            "name": "punto · reemplazar con PUT"
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"terreno\": \"{{norte}}\",\n  \"codigo\": \"a-{{serie}}\",\n  \"nombre\": \"Puerta del jardín\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta del jardín\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · recuperar el valor guardado",
+          "metaInfo": {
+            "id": "35",
+            "type": "http",
+            "name": "punto · recuperar el valor guardado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta del jardín\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · actualizar con PATCH",
+          "metaInfo": {
+            "id": "36",
+            "type": "http",
+            "name": "punto · actualizar con PATCH"
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Puerta de patio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de nombre\", function () { pm.expect(pm.response.json().nombre).to.eql(\"Puerta de patio\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · eliminar",
+          "metaInfo": {
+            "id": "37",
+            "type": "http",
+            "name": "punto · eliminar"
+          },
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "punto · verificar baja",
+          "metaInfo": {
+            "id": "38",
+            "type": "http",
+            "name": "punto · verificar baja"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/puntos-acceso/{{temporal}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Relaciones · impedir borrar un terreno con viviendas",
+          "metaInfo": {
+            "id": "39",
+            "type": "http",
+            "name": "Relaciones · impedir borrar un terreno con viviendas"
+          },
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{norte}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Relaciones · comprobar que Norte sigue disponible",
+          "metaInfo": {
+            "id": "40",
+            "type": "http",
+            "name": "Relaciones · comprobar que Norte sigue disponible"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/{{norte}}/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valor guardado de codigo\", function () { pm.expect(pm.response.json().codigo).to.eql(\"norte\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · crear persona ficticia para esta ejecución",
+          "metaInfo": {
+            "id": "41",
+            "type": "http",
+            "name": "Asignación · crear persona ficticia para esta ejecución"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/personas/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"invitada-{{serie}}\",\n  \"nombre\": \"Mara del Río\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.environment.set(\"invitada\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · incorporar arrendataria en A-01",
+          "metaInfo": {
+            "id": "42",
+            "type": "http",
+            "name": "Asignación · incorporar arrendataria en A-01"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"arrendatario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Valor guardado de rol\", function () { pm.expect(pm.response.json().rol).to.eql(\"arrendatario\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · verificar persistencia y guardar estado",
+          "metaInfo": {
+            "id": "43",
+            "type": "http",
+            "name": "Asignación · verificar persistencia y guardar estado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"La arrendataria quedó vinculada\", function () { pm.expect(pm.response.json().some(f => f.persona === Number(pm.environment.get(\"invitada\")) && f.rol === \"arrendatario\")).to.be.true; });",
+                  "pm.environment.set(\"antes_casa\", JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · rechazar segundo rol en la misma vivienda",
+          "metaInfo": {
+            "id": "44",
+            "type": "http",
+            "name": "Asignación · rechazar segundo rol en la misma vivienda"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"conviviente\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · comprobar estado tras duplicado",
+          "metaInfo": {
+            "id": "45",
+            "type": "http",
+            "name": "Asignación · comprobar estado tras duplicado"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Vínculos y roles idénticos\", function () { pm.expect(pm.response.json()).to.eql(JSON.parse(pm.environment.get(\"antes_casa\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · Scarlett no tiene autoridad para asignar personas en A-01",
+          "metaInfo": {
+            "id": "46",
+            "type": "http",
+            "name": "Asignación · Scarlett no tiene autoridad para asignar personas en A-01"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_scarlett}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"persona\": \"{{invitada}}\",\n  \"rol\": \"arrendatario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación · verificar la misma vivienda tras el rechazo 403",
+          "metaInfo": {
+            "id": "47",
+            "type": "http",
+            "name": "Asignación · verificar la misma vivienda tras el rechazo 403"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_kevin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"A-01 conserva los vínculos y sus roles originales\", function () { pm.expect(pm.response.json()).to.eql(JSON.parse(pm.environment.get(\"antes_casa\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alcance · Scarlett puede consultar su terreno",
+          "metaInfo": {
+            "id": "48",
+            "type": "http",
+            "name": "Alcance · Scarlett puede consultar su terreno"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{rubrica_scarlett}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terrenos/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Parque Norte es visible para Scarlett\", function () { pm.expect(pm.response.json().some(t => t.id === Number(pm.environment.get(\"norte\")))).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

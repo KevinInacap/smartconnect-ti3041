@@ -23,11 +23,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export SMARTCONNECT_DEMO_PASSWORD="$(openssl rand -hex 20)"
-          echo "::add-mask::$SMARTCONNECT_DEMO_PASSWORD"
-          python manage.py seed_demo
+          python manage.py seed_demo --aula > /tmp/smartconnect-semilla.log
           python manage.py runserver 127.0.0.1:8000 --noreload > /tmp/smartconnect.log 2>&1 &
           servidor=$!
           trap 'kill "$servidor" || true' EXIT
           curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent http://127.0.0.1:8000/api/esquema/ -o /dev/null
-          npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --env-var "demoPassword=$SMARTCONNECT_DEMO_PASSWORD" --lang en
+          npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --lang en
+          npx --yes --package=apidog-cli@2.2.12 apidog run apidog/Rubrica.json --lang en

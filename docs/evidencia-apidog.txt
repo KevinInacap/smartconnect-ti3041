@@ -4,50 +4,50 @@ SmartConnect · Acceso residencial
 
 □ Acceso de una residente
 └ Viviendas sin sesión
-  GET http://127.0.0.1:8000/api/viviendas/ [401 Unauthorized, 435B, 41.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/ [401 Unauthorized, 435B, 38.00ms]
   √  HTTP 401
 
 └ Iniciar sesión
-  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 638.00ms]
+  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 623.00ms]
   √  HTTP 200
 
 └ Renovar sesión
-  POST http://127.0.0.1:8000/api/token/refresh/ [200 OK, 556B, 6.00ms]
+  POST http://127.0.0.1:8000/api/token/refresh/ [200 OK, 556B, 9.00ms]
   √  HTTP 200
 
 └ Mis viviendas
-  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 374B, 7.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 374B, 10.00ms]
   √  HTTP 200
 
 └ Mi rol en A-01
-  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 423B, 15.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 424B, 16.00ms]
   √  HTTP 200
   √  Soy arrendataria de A-01
 
 └ Puntos de mi terreno
-  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 457B, 20.00ms]
+  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 457B, 11.00ms]
   √  HTTP 200
 
 └ Entrar por el portón
-  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 467B, 13.00ms]
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 468B, 18.00ms]
   √  HTTP 201
   √  La API identifica la persona del token
   √  Decisión para este punto
   √  Motivo
 
 └ Intentar la puerta de servicio
-  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 475B, 13.00ms]
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 476B, 21.00ms]
   √  HTTP 201
   √  La API identifica la persona del token
   √  Decisión para este punto
   √  Motivo
 
 └ Asignar como residente
-  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [403 Forbidden, 401B, 8.00ms]
+  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [403 Forbidden, 401B, 9.00ms]
   √  HTTP 403
 
 └ Mi historial
-  GET http://127.0.0.1:8000/api/historial/ [200 OK, 628B, 7.00ms]
+  GET http://127.0.0.1:8000/api/historial/ [200 OK, 630B, 8.00ms]
   √  HTTP 200
   √  Ambos intentos quedaron registrados
 
@@ -60,9 +60,9 @@ SmartConnect · Acceso residencial
 ├─────────────────────────┼──────────────────────────┼───────────────────────┤
 │              Assertions │                       18 │                     0 │
 ├─────────────────────────┴──────────────────────────┴───────────────────────┤
-│ Duration: 2.08s                                                            │
+│ Duration: 2.22s                                                            │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Total Response Size: 1.73KB (approx)                                       │
+│ Total Response Size: 1.74KB (approx)                                       │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Average Request Time: 35.33ms [min: 6.00ms, max: 638.00ms, s.d.: 128.14ms] │
+│ Average Request Time: 35.54ms [min: 8.00ms, max: 623.00ms, s.d.: 124.92ms] │
 └────────────────────────────────────────────────────────────────────────────┘

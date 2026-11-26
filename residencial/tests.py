@@ -2,7 +2,9 @@ from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import override_settings
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -163,3 +165,50 @@ class PruebaAPI(APITestCase):
         antes = [m.objects.count() for m in modelos]
         call_command("seed_demo", stdout=StringIO())
         self.assertEqual([m.objects.count() for m in modelos], antes)
+
+    def test_cuentas_de_aula_scarlett_entra_y_kevin_ve_el_resultado(self):
+        call_command("seed_demo", aula=True, stdout=StringIO())
+        login = self.client.post("/api/token/", {"username": "aula_scarlett", "password": "Scarlett-Aula-TI3041!"})
+        self.assertEqual(login.status_code, 200)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + login.data["access"])
+        for codigo, permitido in [("N-01", True), ("N-02", False)]:
+            punto = PuntoAcceso.objects.get(codigo=codigo, terreno=self.norte)
+            intento = self.client.post("/api/accesos/solicitudes/",
+                                       {"punto": punto.pk, "medio": "app", "cerca": True}, format="json")
+            self.assertEqual(intento.status_code, 201)
+            self.assertIs(intento.data["permitido"], permitido)
+        intento_id = intento.data["id"]
+        url = f"/api/viviendas/{self.casa.pk}/asignaciones/"
+        body = {"persona": self.luz.pk, "rol": "conviviente"}
+        self.assertEqual(self.client.post(url, body).status_code, 403)
+        self.assertEqual(self.client.get("/api/historial/").data[0]["id"], intento_id)
+        self.client.credentials()
+        login = self.client.post("/api/token/", {"username": "aula_kevin", "password": "Kevin-Aula-TI3041!"})
+        self.assertEqual(login.status_code, 200)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + login.data["access"])
+        self.assertEqual(self.client.post(url, body).status_code, 201)
+        self.assertTrue(self.client.login(username="aula_kevin", password="Kevin-Aula-TI3041!"))
+        self.assertContains(self.client.get(reverse("admin:residencial_intento_changelist")), "Scarlett (aula)")
+        kevin = get_user_model().objects.get(username="aula_kevin")
+        self.assertFalse(kevin.is_superuser)
+        self.assertFalse(kevin.has_perm("residencial.change_intento"))
+
+    def test_aula_es_explicita_y_conserva_las_claves_existentes(self):
+        usuarios = get_user_model().objects
+        self.assertFalse(usuarios.filter(username__startswith="aula_").exists())
+        anteriores = dict(usuarios.values_list("username", "password"))
+        call_command("seed_demo", aula=True, stdout=StringIO())
+        scarlett = usuarios.get(username="aula_scarlett")
+        scarlett.set_password("ElegidaParaLaPrueba")
+        scarlett.save(update_fields=["password"])
+        call_command("seed_demo", aula=True, stdout=StringIO())
+        self.assertTrue(usuarios.get(pk=scarlett.pk).check_password("ElegidaParaLaPrueba"))
+        self.assertEqual(dict(usuarios.filter(username__in=anteriores).values_list("username", "password")), anteriores)
+
+    def test_aula_rechaza_una_cuenta_preexistente_sin_vinculo(self):
+        usuarios = get_user_model().objects
+        usuarios.create_user("aula_scarlett", password="PruebaDeColision")
+        with self.assertRaises(CommandError):
+            call_command("seed_demo", aula=True, stdout=StringIO())
+        self.assertFalse(usuarios.filter(username="aula_kevin").exists())
+        self.assertTrue(usuarios.get(username="aula_scarlett").check_password("PruebaDeColision"))

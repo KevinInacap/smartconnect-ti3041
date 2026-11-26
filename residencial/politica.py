@@ -1,5 +1,5 @@
 from django.db.models import Q
-from .models import Participacion, Persona, PuntoAcceso, Terreno, Vivienda
+from .models import Intento, Participacion, Persona, PuntoAcceso, Terreno, Vivienda
 
 
 def identidad(user):
@@ -35,3 +35,13 @@ def administra_vivienda(persona, vivienda):
     return persona is not None and Participacion.objects.filter(
         persona=persona, vivienda=vivienda, rol=Participacion.Rol.ADMIN
     ).exists()
+
+
+def intentos_visibles(user):
+    registros = Intento.objects.order_by("-fecha", "-pk")
+    if user.is_staff:
+        return registros
+    persona = identidad(user)
+    if persona is None:
+        return registros.none()
+    return registros.filter(Q(persona=persona) | Q(punto__terreno__administrador=persona))
