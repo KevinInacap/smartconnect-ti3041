@@ -89,6 +89,7 @@ class PruebaAPI(APITestCase):
 
     def test_alcance_y_baja_protegida(self):
         self.autenticar("demo_trabajador")
+        self.assertEqual(self.client.post("/api/viviendas/inexistente/asignaciones/", {}).status_code, 404)
         self.assertEqual(self.client.get("/api/viviendas/").data, [])
         self.assertEqual([v["id"] for v in self.client.get("/api/terrenos/").data], [self.norte.pk])
         self.assertEqual(self.client.get(f"/api/viviendas/{self.depto.pk}/").status_code, 404)
