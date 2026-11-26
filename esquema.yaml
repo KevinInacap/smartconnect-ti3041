@@ -115,8 +115,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este persona.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - personas
@@ -135,8 +135,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este persona.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - personas
@@ -167,8 +167,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este persona.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - personas
@@ -198,8 +198,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este persona.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - personas
@@ -256,8 +256,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este punto acceso.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - puntos-acceso
@@ -276,8 +276,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este punto acceso.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - puntos-acceso
@@ -308,8 +308,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este punto acceso.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - puntos-acceso
@@ -339,8 +339,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este punto acceso.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - puntos-acceso
@@ -397,8 +397,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este terreno.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - terrenos
@@ -417,8 +417,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este terreno.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - terrenos
@@ -449,8 +449,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este terreno.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - terrenos
@@ -480,8 +480,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este terreno.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - terrenos
@@ -592,8 +592,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas
@@ -612,8 +612,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas
@@ -644,8 +644,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas
@@ -675,8 +675,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas
@@ -692,8 +692,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas
@@ -714,8 +714,8 @@ paths:
       - in: path
         name: id
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este vivienda.
+          type: string
+          pattern: ^[0-9]+$
         required: true
       tags:
       - viviendas

@@ -16,3 +16,18 @@ jobs:
       - run: python manage.py makemigrations --check --dry-run
       - run: python manage.py spectacular --validate --fail-on-warn --file /tmp/smartconnect.yaml
       - run: python manage.py test -v 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Recorrer la API con Apidog CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SMARTCONNECT_DEMO_PASSWORD="$(openssl rand -hex 20)"
+          echo "::add-mask::$SMARTCONNECT_DEMO_PASSWORD"
+          python manage.py seed_demo
+          python manage.py runserver 127.0.0.1:8000 --noreload > /tmp/smartconnect.log 2>&1 &
+          servidor=$!
+          trap 'kill "$servidor" || true' EXIT
+          curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent http://127.0.0.1:8000/api/esquema/ -o /dev/null
+          npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --env-var "demoPassword=$SMARTCONNECT_DEMO_PASSWORD" --lang en

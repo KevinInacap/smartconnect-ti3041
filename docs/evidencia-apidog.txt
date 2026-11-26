@@ -1,0 +1,295 @@
+apidog
+
+SmartConnect · Defensa del segundo avance
+
+□ Defensa acumulativa
+└ JWT · recurso protegido sin token
+  GET http://127.0.0.1:8000/api/personas/ [401 Unauthorized, 435B, 31.00ms]
+  √  HTTP 401
+
+└ JWT · iniciar sesión como operador
+  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 537.00ms]
+  √  HTTP 200
+
+└ JWT · iniciar sesión como duena
+  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 508.00ms]
+  √  HTTP 200
+
+└ JWT · iniciar sesión como trabajador
+  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 507.00ms]
+  √  HTTP 200
+
+└ JWT · renovar y utilizar el nuevo access
+  POST http://127.0.0.1:8000/api/token/refresh/ [200 OK, 556B, 6.00ms]
+  √  HTTP 200
+
+└ Catálogo · localizar terreno Norte
+  GET http://127.0.0.1:8000/api/terrenos/ [200 OK, 457B, 6.00ms]
+  √  HTTP 200
+
+└ Catálogo · identificar a la administradora
+  GET http://127.0.0.1:8000/api/personas/ [200 OK, 583B, 5.00ms]
+  √  HTTP 200
+
+└ Catálogo · identificar ambas viviendas
+  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 434B, 5.00ms]
+  √  HTTP 200
+
+└ Catálogo · identificar ambos puntos
+  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 516B, 5.00ms]
+  √  HTTP 200
+
+└ persona · crear
+  POST http://127.0.0.1:8000/api/personas/ [201 Created, 385B, 10.00ms]
+  √  HTTP 201
+
+└ persona · localizar en listado
+  GET http://127.0.0.1:8000/api/personas/ [200 OK, 642B, 7.00ms]
+  √  HTTP 200
+  √  El listado contiene el ID creado
+
+└ persona · consultar detalle
+  GET http://127.0.0.1:8000/api/personas/6/ [200 OK, 394B, 6.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ persona · reemplazar con PUT
+  PUT http://127.0.0.1:8000/api/personas/6/ [200 OK, 395B, 9.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ persona · recuperar el valor guardado
+  GET http://127.0.0.1:8000/api/personas/6/ [200 OK, 395B, 6.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ persona · actualizar con PATCH
+  PATCH http://127.0.0.1:8000/api/personas/6/ [200 OK, 394B, 9.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ persona · eliminar
+  DELETE http://127.0.0.1:8000/api/personas/6/ [204 No Content, 311B, 12.00ms]
+  √  HTTP 204
+
+└ persona · verificar baja
+  GET http://127.0.0.1:8000/api/personas/6/ [404 Not Found, 391B, 7.00ms]
+  √  HTTP 404
+
+└ terreno · crear
+  POST http://127.0.0.1:8000/api/terrenos/ [201 Created, 408B, 11.00ms]
+  √  HTTP 201
+
+└ terreno · localizar en listado
+  GET http://127.0.0.1:8000/api/terrenos/ [200 OK, 539B, 6.00ms]
+  √  HTTP 200
+  √  El listado contiene el ID creado
+
+└ terreno · consultar detalle
+  GET http://127.0.0.1:8000/api/terrenos/3/ [200 OK, 417B, 6.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ terreno · reemplazar con PUT
+  PUT http://127.0.0.1:8000/api/terrenos/3/ [200 OK, 417B, 10.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ terreno · recuperar el valor guardado
+  GET http://127.0.0.1:8000/api/terrenos/3/ [200 OK, 417B, 7.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ terreno · actualizar con PATCH
+  PATCH http://127.0.0.1:8000/api/terrenos/3/ [200 OK, 417B, 9.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ terreno · eliminar
+  DELETE http://127.0.0.1:8000/api/terrenos/3/ [204 No Content, 311B, 10.00ms]
+  √  HTTP 204
+
+└ terreno · verificar baja
+  GET http://127.0.0.1:8000/api/terrenos/3/ [404 Not Found, 391B, 6.00ms]
+  √  HTTP 404
+
+└ vivienda · crear
+  POST http://127.0.0.1:8000/api/viviendas/ [201 Created, 388B, 9.00ms]
+  √  HTTP 201
+
+└ vivienda · localizar en listado
+  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 496B, 7.00ms]
+  √  HTTP 200
+  √  El listado contiene el ID creado
+
+└ vivienda · consultar detalle
+  GET http://127.0.0.1:8000/api/viviendas/3/ [200 OK, 397B, 4.00ms]
+  √  HTTP 200
+  √  Valor guardado de tipo
+
+└ vivienda · reemplazar con PUT
+  PUT http://127.0.0.1:8000/api/viviendas/3/ [200 OK, 405B, 10.00ms]
+  √  HTTP 200
+  √  Valor guardado de tipo
+
+└ vivienda · recuperar el valor guardado
+  GET http://127.0.0.1:8000/api/viviendas/3/ [200 OK, 405B, 6.00ms]
+  √  HTTP 200
+  √  Valor guardado de tipo
+
+└ vivienda · actualizar con PATCH
+  PATCH http://127.0.0.1:8000/api/viviendas/3/ [200 OK, 397B, 9.00ms]
+  √  HTTP 200
+  √  Valor guardado de tipo
+
+└ vivienda · eliminar
+  DELETE http://127.0.0.1:8000/api/viviendas/3/ [204 No Content, 311B, 11.00ms]
+  √  HTTP 204
+
+└ vivienda · verificar baja
+  GET http://127.0.0.1:8000/api/viviendas/3/ [404 Not Found, 392B, 7.00ms]
+  √  HTTP 404
+
+└ punto · crear
+  POST http://127.0.0.1:8000/api/puntos-acceso/ [201 Created, 401B, 11.00ms]
+  √  HTTP 201
+
+└ punto · localizar en listado
+  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 591B, 6.00ms]
+  √  HTTP 200
+  √  El listado contiene el ID creado
+
+└ punto · consultar detalle
+  GET http://127.0.0.1:8000/api/puntos-acceso/4/ [200 OK, 410B, 5.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ punto · reemplazar con PUT
+  PUT http://127.0.0.1:8000/api/puntos-acceso/4/ [200 OK, 413B, 10.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ punto · recuperar el valor guardado
+  GET http://127.0.0.1:8000/api/puntos-acceso/4/ [200 OK, 413B, 6.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ punto · actualizar con PATCH
+  PATCH http://127.0.0.1:8000/api/puntos-acceso/4/ [200 OK, 410B, 10.00ms]
+  √  HTTP 200
+  √  Valor guardado de nombre
+
+└ punto · eliminar
+  DELETE http://127.0.0.1:8000/api/puntos-acceso/4/ [204 No Content, 311B, 10.00ms]
+  √  HTTP 204
+
+└ punto · verificar baja
+  GET http://127.0.0.1:8000/api/puntos-acceso/4/ [404 Not Found, 395B, 7.00ms]
+  √  HTTP 404
+
+└ Relaciones · impedir borrar un terreno con viviendas
+  DELETE http://127.0.0.1:8000/api/terrenos/1/ [409 Conflict, 413B, 6.00ms]
+  √  HTTP 409
+
+└ Relaciones · comprobar que Norte sigue disponible
+  GET http://127.0.0.1:8000/api/terrenos/1/ [200 OK, 403B, 5.00ms]
+  √  HTTP 200
+  √  Valor guardado de codigo
+
+└ Asignación · crear persona ficticia para esta ejecución
+  POST http://127.0.0.1:8000/api/personas/ [201 Created, 394B, 9.00ms]
+  √  HTTP 201
+
+└ Asignación · incorporar arrendataria en A-01
+  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [201 Created, 425B, 18.00ms]
+  √  HTTP 201
+  √  Valor guardado de rol
+
+└ Asignación · verificar persistencia y guardar estado
+  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 535B, 8.00ms]
+  √  HTTP 200
+  √  La arrendataria quedó vinculada
+
+└ Asignación · rechazar segundo rol en la misma vivienda
+  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [409 Conflict, 387B, 6.00ms]
+  √  HTTP 409
+
+└ Asignación · comprobar estado tras duplicado
+  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 535B, 7.00ms]
+  √  HTTP 200
+  √  Vínculos y roles idénticos
+
+└ Asignación · guardar estado de S-02
+  GET http://127.0.0.1:8000/api/viviendas/2/asignaciones/ [200 OK, 535B, 6.00ms]
+  √  HTTP 200
+
+└ Asignación · rechazar operación en vivienda ajena
+  POST http://127.0.0.1:8000/api/viviendas/2/asignaciones/ [403 Forbidden, 401B, 6.00ms]
+  √  HTTP 403
+
+└ Asignación · comprobar estado tras denegación
+  GET http://127.0.0.1:8000/api/viviendas/2/asignaciones/ [200 OK, 535B, 6.00ms]
+  √  HTTP 200
+  √  S-02 conserva todos los vínculos
+
+└ Alcance · trabajador ve solo su terreno
+  GET http://127.0.0.1:8000/api/terrenos/ [200 OK, 391B, 6.00ms]
+  √  HTTP 200
+  √  Solo Parque Norte
+
+└ Alcance · trabajador sin vivienda
+  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 323B, 5.00ms]
+  √  HTTP 200
+  √  Listado vacío
+
+└ Accesos · App próxima
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 467B, 10.00ms]
+  √  HTTP 201
+  √  Valor guardado de motivo
+  √  Valor guardado de permitido
+
+└ Accesos · App en otro punto
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 475B, 12.00ms]
+  √  HTTP 201
+  √  Valor guardado de motivo
+  √  Valor guardado de permitido
+
+└ Accesos · App distante
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 477B, 12.00ms]
+  √  HTTP 201
+  √  Valor guardado de motivo
+  √  Valor guardado de permitido
+
+└ Accesos · RFID de Luz
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 532B, 12.00ms]
+  √  HTTP 201
+  √  Valor guardado de motivo
+  √  Valor guardado de permitido
+
+└ Accesos · RFID desconocido
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 548B, 12.00ms]
+  √  HTTP 201
+  √  Valor guardado de motivo
+  √  Valor guardado de permitido
+  √  Valor guardado de persona
+
+└ Historial · recuperar el intento por cuatro filtros
+  GET http://127.0.0.1:8000/api/historial/?persona=5&terreno=1&punto=1&fecha=2026-11-25 [200 OK, 846B, 9.00ms]
+  √  HTTP 200
+  √  Incluye el intento RFID registrado
+
+┌─────────────────────────┬─────────────────────────┬───────────────────────┐
+│                         │                Executed │                Failed │
+├─────────────────────────┼─────────────────────────┼───────────────────────┤
+│              Iterations │                       1 │                     0 │
+├─────────────────────────┼─────────────────────────┼───────────────────────┤
+│           Http Requests │                      59 │                     0 │
+├─────────────────────────┼─────────────────────────┼───────────────────────┤
+│              Assertions │                      98 │                     0 │
+├─────────────────────────┴─────────────────────────┴───────────────────────┤
+│ Duration: 7.95s                                                           │
+├───────────────────────────────────────────────────────────────────────────┤
+│ Total Response Size: 7.65KB (approx)                                      │
+├───────────────────────────────────────────────────────────────────────────┤
+│ Average Request Time: 15.29ms [min: 4.00ms, max: 537.00ms, s.d.: 71.02ms] │
+└───────────────────────────────────────────────────────────────────────────┘

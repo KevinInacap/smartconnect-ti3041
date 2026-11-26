@@ -21,6 +21,8 @@ class Conflicto(APIException):
 
 
 class MaestroViewSet(viewsets.ModelViewSet):
+    lookup_value_regex = r"[0-9]+"
+
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return self.queryset.none()

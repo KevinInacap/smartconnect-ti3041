@@ -1,0 +1,18 @@
+digraph Acceso {
+  graph [bgcolor="#f8fafc", pad="0.30", nodesep="0.45", ranksep="0.60", splines=polyline, outputorder=edgesfirst, fontname="Arial"];
+  node [shape=plain, fontname="Arial", fontsize=13];
+  edge [fontname="Arial", fontsize=11, color="#64748b", fontcolor="#334155", penwidth=1.5, arrowsize=0.72];
+  terreno [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Terreno</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id</FONT></TD></TR></TABLE>>];
+  persona [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Persona</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id</FONT></TD></TR></TABLE>>];
+  punto [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Punto de acceso</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  terreno_id<BR ALIGN="LEFT"/>codigo  ·  nombre</FONT></TD></TR></TABLE>>];
+  permiso [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#1e4166"><FONT COLOR="white" POINT-SIZE="15"><B>Permiso por punto</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  persona_id<BR ALIGN="LEFT"/>FK  punto_id</FONT></TD></TR></TABLE>>];
+  credencial [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#1e4166"><FONT COLOR="white" POINT-SIZE="15"><B>Credencial RFID</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  persona_id<BR ALIGN="LEFT"/>UQ  huella  ·  activa</FONT></TD></TR></TABLE>>];
+  intento [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#1e4166"><FONT COLOR="white" POINT-SIZE="15"><B>Intento de acceso</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  punto_id<BR ALIGN="LEFT"/>FK  persona_id (opcional)<BR ALIGN="LEFT"/>fecha  ·  medio  ·  huella<BR ALIGN="LEFT"/>permitido  ·  motivo</FONT></TD></TR></TABLE>>];
+  terreno -> punto [label=" 1 contiene 0..N "];
+  persona -> credencial [label=" 1 posee 0..N "];
+  persona -> permiso [label=" 1 recibe 0..N "];
+  punto -> permiso [label=" 1 admite 0..N "];
+  persona -> intento [label=" 0..1 identifica 0..N "];
+  punto -> intento [label=" 1 registra 0..N "];
+{ rank=same; persona; punto; }
+}
