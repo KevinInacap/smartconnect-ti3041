@@ -25,6 +25,21 @@ Si ya tienes la copia preparada en Windows, abre **Iniciar SmartConnect.cmd** co
 
 Estas identidades son datos ficticios elegidos para el ejercicio. Las claves de esta tabla son públicas y se habilitan expresamente con `seed_demo --aula` para una instancia local con datos de ejemplo. En la colección actual el login ya incluye la cuenta y la clave de práctica. Puedes comenzar sin crear `demoPassword`. Repetir la semilla conserva las contraseñas que ya existan.
 
+### Crear una cuenta desde Apidog
+
+Envía `POST http://127.0.0.1:8000/api/usuarios/` con **Auth → No Auth** y un cuerpo JSON como el siguiente.
+
+```json
+{
+  "username": "compa01",
+  "password": "Patio-Clase-27!"
+}
+```
+
+Elige un nombre disponible, sin espacios, y una contraseña de 8 a 128 caracteres. Un `201` devuelve el `id` y el `username` guardados en Django. Un nombre repetido o datos inválidos devuelven `400`. Envía el mismo JSON a `POST /api/token/` para obtener los tokens y usa `access` como Bearer en las rutas protegidas.
+
+La cuenta nueva empieza con permisos estándar. En Django Admin, un superusuario puede verla en **Usuarios** y vincularla desde **Personas → Cuenta**. Los roles de cada vivienda se asignan desde **Participaciones**. `aula_kevin` sirve para consultar los registros de clase. Para administrar cuentas, crea tu propio superusuario con `python manage.py createsuperuser`. [Colección de registro y login](apidog/RegistroUsuarios.json) · [Panel local](http://127.0.0.1:8000/admin/)
+
 ## Guía para la clase
 
 Abre al mismo tiempo **Apidog** y el **Historial**. Las peticiones de la carpeta **Acceso de una residente** están ordenadas. Pulsa **Enviar** en cada una, desde la primera. El login y las consultas guardan en el entorno los tokens y los identificadores que utilizan los pasos siguientes.
@@ -54,7 +69,7 @@ cd smartconnect-ti3041
 
 La instalación manual equivalente empieza con `python -m venv .venv`. Activa ese entorno y ejecuta `python -m pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py seed_demo --aula` y `python manage.py runserver 127.0.0.1:8000 --insecure`. Django usa el argumento `--insecure` para servir los archivos estáticos locales de Swagger y Admin durante la práctica.
 
-En Apidog, importa [SmartConnect.json](apidog/SmartConnect.json) y [Rubrica.json](apidog/Rubrica.json) como colecciones Postman en módulos separados. Conserva los casos con el mismo método y URL, junto con sus postprocesadores. El [contrato OpenAPI](esquema.yaml) documenta los endpoints y sus respuestas. Usa `http://127.0.0.1:8000` como URL base del entorno local y como valor de `baseUrl` si las peticiones importadas usan esa variable. [Guía de importación de Postman](https://docs.apidog.com/import-from-postman-635043m0)
+En Apidog, importa [SmartConnect.json](apidog/SmartConnect.json), [Rubrica.json](apidog/Rubrica.json) y [RegistroUsuarios.json](apidog/RegistroUsuarios.json) como colecciones Postman en módulos separados. Conserva los casos con el mismo método y URL, junto con sus postprocesadores. El [contrato OpenAPI](esquema.yaml) documenta los endpoints y sus respuestas. Usa `http://127.0.0.1:8000` como URL base del entorno local y como valor de `baseUrl` si las peticiones importadas usan esa variable. [Guía de importación de Postman](https://docs.apidog.com/import-from-postman-635043m0)
 
 **Si hay un error en Apidog**
 
@@ -169,10 +184,12 @@ Para habilitar a un nuevo residente, vincula su cuenta con su ficha de persona e
 
 ## Referencia de la API
 
-Todas las rutas de negocio requieren `Authorization: Bearer <access>`. Las cuatro colecciones maestras aceptan GET y POST. Cada ruta con `{id}/` acepta GET, PUT, PATCH y DELETE.
+El registro y el inicio de sesión son públicos. Las rutas de negocio requieren `Authorization: Bearer <access>`. Las cuatro colecciones maestras aceptan GET y POST. Cada ruta de maestro con `{id}/` acepta GET, PUT, PATCH y DELETE.
 
 | Ruta bajo `/api/` | Alcance |
 |---|---|
+| `usuarios/` | POST crea una cuenta estándar con `username` y `password`. |
+| `token/` y `token/refresh/` | POST inicia sesión o renueva el access JWT. |
 | `personas/` | El operador gestiona el catálogo. Cada persona puede consultar su propia ficha. |
 | `terrenos/` | El operador mantiene los terrenos. Administradores, residentes y trabajadores consultan los vinculados. |
 | `viviendas/` | El operador y el administrador del terreno mantienen viviendas. Los residentes consultan las que les corresponden. |
@@ -190,6 +207,7 @@ Con el servidor local encendido y los datos de clase cargados, abre una segunda 
 ```powershell
 npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --lang en
 npx --yes --package=apidog-cli@2.2.12 apidog run apidog/Rubrica.json --lang en
+npx --yes --package=apidog-cli@2.2.12 apidog run apidog/RegistroUsuarios.json --lang en
 .\.venv\Scripts\python manage.py test
 ```
 
@@ -197,6 +215,7 @@ npx --yes --package=apidog-cli@2.2.12 apidog run apidog/Rubrica.json --lang en
 |---|---|
 | Acceso de Scarlett · Apidog CLI | 11 peticiones y 23 aserciones aprobadas. [Registro](docs/evidencia-apidog.txt) |
 | Cuatro CRUD, JWT y asignaciones · Apidog CLI | 53 peticiones y 87 aserciones aprobadas. [Registro](docs/evidencia-rubrica.txt) |
-| Backend · Django | 15 pruebas aprobadas, con autenticación, permisos, semilla, altas/rechazos e igualdad de los ID en la API y el panel. |
+| Registro de usuarios · Apidog CLI | 7 peticiones y 14 aserciones aprobadas. Cubren alta, duplicado, validación, login y permisos iniciales. |
+| Backend · Django | 17 pruebas aprobadas. Incluyen registro, login, permisos y trazabilidad. |
 
 **Decisión para el siguiente avance.** Las autorizaciones se conceden por persona y punto. La app usa proximidad simulada y el operador representa al lector RFID. La integración física tendrá que registrar una confirmación del dispositivo después de la autorización.

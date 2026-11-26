@@ -2,18 +2,21 @@ from django.db import transaction
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, PermissionDenied
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Credencial, Intento, Participacion, PermisoPunto, Persona, PuntoAcceso, Terreno, Vivienda
 from .politica import administra_vivienda, identidad, intentos_visibles, terrenos_visibles, visibles
 from .serializers import (
-    AsignacionSerializer, FiltrosHistorialSerializer, IntentoSerializer, ParticipacionSerializer,
-    PersonaSerializer, PuntoSerializer, SolicitudSerializer, TerrenoSerializer, ViviendaSerializer,
+    AsignacionSerializer, FiltrosHistorialSerializer, InicioSesionSerializer, IntentoSerializer,
+    ParticipacionSerializer, PersonaSerializer, PuntoSerializer, RegistroUsuarioSerializer,
+    SolicitudSerializer, TerrenoSerializer, TokensInicioSesionSerializer, ViviendaSerializer,
 )
 
 
@@ -23,6 +26,39 @@ class Conflicto(APIException):
 
 SIN_SESION = OpenApiResponse(OpenApiTypes.OBJECT, "El token de acceso falta, expiró o es inválido.")
 VIVIENDA_NO_ENCONTRADA = OpenApiResponse(OpenApiTypes.OBJECT, "La vivienda no está disponible para esta consulta.")
+
+
+@extend_schema_view(post=extend_schema(
+    request=InicioSesionSerializer,
+    responses={
+        200: OpenApiResponse(TokensInicioSesionSerializer, "Credenciales verificadas."),
+        400: OpenApiResponse(OpenApiTypes.OBJECT, "Falta el nombre de usuario o la contraseña."),
+        401: OpenApiResponse(OpenApiTypes.OBJECT, "Credenciales inválidas o cuenta inactiva."),
+    },
+))
+class InicioSesion(TokenObtainPairView):
+    serializer_class = InicioSesionSerializer
+
+
+class RegistrarUsuario(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        description="Crea una cuenta estándar para iniciar sesión. La vinculación con una persona "
+                    "y los permisos residenciales se gestionan por separado.",
+        request=RegistroUsuarioSerializer,
+        responses={
+            201: OpenApiResponse(RegistroUsuarioSerializer, "Cuenta creada."),
+            400: OpenApiResponse(OpenApiTypes.OBJECT, "Nombre de usuario duplicado o datos inválidos."),
+        },
+    )
+    @transaction.atomic
+    def post(self, request):
+        registro = RegistroUsuarioSerializer(data=request.data)
+        registro.is_valid(raise_exception=True)
+        registro.save()
+        return Response(registro.data, status=status.HTTP_201_CREATED)
 
 
 class MaestroViewSet(viewsets.ModelViewSet):

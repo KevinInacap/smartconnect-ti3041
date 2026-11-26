@@ -1,6 +1,45 @@
+from collections.abc import Mapping
+
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Intento, Participacion, Persona, PuntoAcceso, Terreno, Vivienda
+
+
+Cuenta = get_user_model()
+
+
+class RegistroUsuarioSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8, max_length=128, trim_whitespace=False)
+
+    class Meta:
+        model = Cuenta
+        fields = ["id", "username", "password"]
+
+    def to_internal_value(self, data):
+        if isinstance(data, Mapping) and isinstance(data.get("username"), str):
+            data = data.copy()
+            data["username"] = Cuenta.normalize_username(data["username"])
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        return Cuenta.objects.create_user(**validated_data)
+
+
+class InicioSesionSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password"].trim_whitespace = False
+
+    def validate(self, attrs):
+        attrs[self.username_field] = Cuenta.normalize_username(attrs[self.username_field])
+        return super().validate(attrs)
+
+
+class TokensInicioSesionSerializer(serializers.Serializer):
+    access = serializers.CharField(read_only=True)
+    refresh = serializers.CharField(read_only=True)
 
 
 class PersonaSerializer(serializers.ModelSerializer):
