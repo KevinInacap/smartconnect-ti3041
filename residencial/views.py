@@ -1,7 +1,8 @@
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, PermissionDenied
@@ -18,6 +19,10 @@ from .serializers import (
 
 class Conflicto(APIException):
     status_code = status.HTTP_409_CONFLICT
+
+
+SIN_SESION = OpenApiResponse(OpenApiTypes.OBJECT, "El token de acceso falta, expiró o es inválido.")
+VIVIENDA_NO_ENCONTRADA = OpenApiResponse(OpenApiTypes.OBJECT, "La vivienda no está disponible para esta consulta.")
 
 
 class MaestroViewSet(viewsets.ModelViewSet):
@@ -78,7 +83,18 @@ class ViviendaViewSet(MaestroViewSet):
     queryset = Vivienda.objects.all()
     serializer_class = ViviendaSerializer
 
-    @extend_schema(request=AsignacionSerializer, responses={201: ParticipacionSerializer})
+    @extend_schema(
+        description="Requiere el rol propietario_administrador en esta vivienda, incluso si la cuenta es operadora.",
+        request=AsignacionSerializer,
+        responses={
+            201: OpenApiResponse(ParticipacionSerializer, "Participación creada."),
+            400: OpenApiResponse(OpenApiTypes.OBJECT, "Persona o rol de destino inválido."),
+            401: SIN_SESION,
+            403: OpenApiResponse(OpenApiTypes.OBJECT, "La cuenta carece del rol requerido en esta vivienda."),
+            404: VIVIENDA_NO_ENCONTRADA,
+            409: OpenApiResponse(OpenApiTypes.OBJECT, "La persona ya está vinculada a la vivienda."),
+        },
+    )
     @action(detail=True, methods=["post"], url_path="asignaciones")
     def asignaciones(self, request, pk=None):
         vivienda = get_object_or_404(Vivienda, pk=pk)
@@ -94,7 +110,11 @@ class ViviendaViewSet(MaestroViewSet):
             raise Conflicto("La persona ya está vinculada a esta vivienda.")
         return Response(ParticipacionSerializer(vinculo).data, status=201)
 
-    @extend_schema(responses=ParticipacionSerializer(many=True))
+    @extend_schema(
+        description="El operador y los administradores correspondientes ven todos los vínculos. "
+                    "Los demás residentes ven su propio vínculo.",
+        responses={200: ParticipacionSerializer(many=True), 401: SIN_SESION, 404: VIVIENDA_NO_ENCONTRADA},
+    )
     @asignaciones.mapping.get
     def listar_asignaciones(self, request, pk=None):
         vivienda = self.get_object()
@@ -107,7 +127,17 @@ class ViviendaViewSet(MaestroViewSet):
 
 
 class SolicitarAcceso(APIView):
-    @extend_schema(request=SolicitudSerializer, responses={201: IntentoSerializer})
+    @extend_schema(
+        description="Para app, envía `cerca`. Para RFID, envía `uid` desde una cuenta operadora. "
+                    "La respuesta indica la decisión en `permitido` y `motivo`.",
+        request=SolicitudSerializer,
+        responses={
+            201: OpenApiResponse(IntentoSerializer, "Intento guardado. La decisión puede ser autorizada o denegada."),
+            400: OpenApiResponse(OpenApiTypes.OBJECT, "Punto, medio o datos del medio inválidos."),
+            401: SIN_SESION,
+            403: OpenApiResponse(OpenApiTypes.OBJECT, "El lector RFID requiere una cuenta operadora."),
+        },
+    )
     @transaction.atomic
     def post(self, request):
         entrada = SolicitudSerializer(data=request.data)
@@ -144,7 +174,16 @@ class SolicitarAcceso(APIView):
 
 
 class Historial(APIView):
-    @extend_schema(parameters=[FiltrosHistorialSerializer], responses=IntentoSerializer(many=True))
+    @extend_schema(
+        description="El operador ve todos los intentos. Las demás cuentas ven sus intentos propios "
+                    "y los de los terrenos que administran.",
+        parameters=[FiltrosHistorialSerializer],
+        responses={
+            200: IntentoSerializer(many=True),
+            400: OpenApiResponse(OpenApiTypes.OBJECT, "Filtro inválido."),
+            401: SIN_SESION,
+        },
+    )
     def get(self, request):
         filtros = FiltrosHistorialSerializer(data=request.query_params)
         filtros.is_valid(raise_exception=True)

@@ -7,6 +7,8 @@ paths:
   /api/accesos/solicitudes/:
     post:
       operationId: accesos_solicitudes_create
+      description: Para app, envía `cerca`. Para RFID, envía `uid` desde una cuenta
+        operadora. La respuesta indica la decisión en `permitido` y `motivo`.
       tags:
       - accesos
       requestBody:
@@ -29,10 +31,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Intento'
-          description: ''
+          description: Intento guardado. La decisión puede ser autorizada o denegada.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Punto, medio o datos del medio inválidos.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: El token de acceso falta, expiró o es inválido.
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: El lector RFID requiere una cuenta operadora.
   /api/historial/:
     get:
       operationId: historial_list
+      description: El operador ve todos los intentos. Las demás cuentas ven sus intentos
+        propios y los de los terrenos que administran.
       parameters:
       - in: query
         name: fecha
@@ -67,6 +92,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/Intento'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Filtro inválido.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: El token de acceso falta, expiró o es inválido.
   /api/personas/:
     get:
       operationId: personas_list
@@ -688,6 +727,8 @@ paths:
   /api/viviendas/{id}/asignaciones/:
     get:
       operationId: viviendas_asignaciones_list
+      description: El operador y los administradores correspondientes ven todos los
+        vínculos. Los demás residentes ven su propio vínculo.
       parameters:
       - in: path
         name: id
@@ -708,8 +749,24 @@ paths:
                 items:
                   $ref: '#/components/schemas/Participacion'
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: El token de acceso falta, expiró o es inválido.
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: La vivienda no está disponible para esta consulta.
     post:
       operationId: viviendas_asignaciones_create
+      description: Requiere el rol propietario_administrador en esta vivienda, incluso
+        si la cuenta es operadora.
       parameters:
       - in: path
         name: id
@@ -739,7 +796,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Participacion'
-          description: ''
+          description: Participación creada.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Persona o rol de destino inválido.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: El token de acceso falta, expiró o es inválido.
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: La cuenta carece del rol requerido en esta vivienda.
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: La vivienda no está disponible para esta consulta.
+        '409':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: La persona ya está vinculada a la vivienda.
 components:
   schemas:
     AsignacionRequest:

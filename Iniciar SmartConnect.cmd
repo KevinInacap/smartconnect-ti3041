@@ -20,6 +20,6 @@ echo Deja esta ventana abierta durante la clase. Para detener el servidor, pulsa
 if errorlevel 1 goto fallo
 exit /b 0
 :fallo
-echo Revisa el mensaje anterior. Se requiere Python 3.13 con pip.
+echo Revisa el mensaje anterior. Se requiere Python 3.12 o 3.13 con pip.
 pause
 exit /b 1

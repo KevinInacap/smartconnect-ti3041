@@ -4,50 +4,58 @@ SmartConnect · Acceso residencial
 
 □ Acceso de una residente
 └ Viviendas sin sesión
-  GET http://127.0.0.1:8000/api/viviendas/ [401 Unauthorized, 435B, 38.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/ [401 Unauthorized, 434B, 36.00ms]
   √  HTTP 401
 
 └ Iniciar sesión
-  POST http://127.0.0.1:8000/api/token/ [200 OK, 801B, 623.00ms]
+  POST http://127.0.0.1:8000/api/token/ [200 OK, 800B, 621.00ms]
   √  HTTP 200
+  √  El login entrega ambos tokens
 
 └ Renovar sesión
-  POST http://127.0.0.1:8000/api/token/refresh/ [200 OK, 556B, 9.00ms]
+  POST http://127.0.0.1:8000/api/token/refresh/ [200 OK, 555B, 8.00ms]
   √  HTTP 200
+
+└ Mi terreno
+  GET http://127.0.0.1:8000/api/terrenos/ [200 OK, 390B, 9.00ms]
+  √  HTTP 200
+  √  Veo Parque Norte
 
 └ Mis viviendas
-  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 374B, 10.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/ [200 OK, 373B, 8.00ms]
   √  HTTP 200
+  √  A-01 pertenece a Parque Norte
 
 └ Mi rol en A-01
-  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 424B, 16.00ms]
+  GET http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [200 OK, 422B, 27.00ms]
   √  HTTP 200
-  √  Soy arrendataria de A-01
+  √  Solo veo mi vínculo de arrendataria en A-01
 
 └ Puntos de mi terreno
-  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 457B, 11.00ms]
+  GET http://127.0.0.1:8000/api/puntos-acceso/ [200 OK, 456B, 8.00ms]
   √  HTTP 200
+  √  Veo N-01 y N-02 de Parque Norte
 
 └ Entrar por el portón
-  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 468B, 18.00ms]
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 466B, 23.00ms]
   √  HTTP 201
   √  La API identifica la persona del token
   √  Decisión para este punto
   √  Motivo
 
 └ Intentar la puerta de servicio
-  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 476B, 21.00ms]
+  POST http://127.0.0.1:8000/api/accesos/solicitudes/ [201 Created, 474B, 23.00ms]
   √  HTTP 201
   √  La API identifica la persona del token
   √  Decisión para este punto
   √  Motivo
 
 └ Asignar como residente
-  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [403 Forbidden, 401B, 9.00ms]
+  POST http://127.0.0.1:8000/api/viviendas/1/asignaciones/ [403 Forbidden, 400B, 7.00ms]
   √  HTTP 403
 
 └ Mi historial
-  GET http://127.0.0.1:8000/api/historial/ [200 OK, 630B, 8.00ms]
+  GET http://127.0.0.1:8000/api/historial/ [200 OK, 627B, 9.00ms]
   √  HTTP 200
   √  Ambos intentos quedaron registrados
 
@@ -56,13 +64,13 @@ SmartConnect · Acceso residencial
 ├─────────────────────────┼──────────────────────────┼───────────────────────┤
 │              Iterations │                        1 │                     0 │
 ├─────────────────────────┼──────────────────────────┼───────────────────────┤
-│           Http Requests │                       10 │                     0 │
+│           Http Requests │                       11 │                     0 │
 ├─────────────────────────┼──────────────────────────┼───────────────────────┤
-│              Assertions │                       18 │                     0 │
+│              Assertions │                       23 │                     0 │
 ├─────────────────────────┴──────────────────────────┴───────────────────────┤
-│ Duration: 2.22s                                                            │
+│ Duration: 2.12s                                                            │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Total Response Size: 1.74KB (approx)                                       │
+│ Total Response Size: 1.8KB (approx)                                        │
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Average Request Time: 35.54ms [min: 8.00ms, max: 623.00ms, s.d.: 124.92ms] │
+│ Average Request Time: 33.09ms [min: 7.00ms, max: 621.00ms, s.d.: 118.16ms] │
 └────────────────────────────────────────────────────────────────────────────┘
