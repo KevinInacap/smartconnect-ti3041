@@ -1,0 +1,149 @@
+from io import StringIO
+
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.test import override_settings
+from django.utils import timezone
+from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import Credencial, Empleo, Intento, Participacion, PermisoPunto, Persona, PuntoAcceso, Terreno, Vivienda
+
+
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
+class PruebaAPI(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_demo", stdout=StringIO())
+        cls.duena = Persona.objects.get(codigo="duena")
+        cls.luz = Persona.objects.get(codigo="trabajador")
+        cls.norte = Terreno.objects.get(codigo="norte")
+        cls.casa = Vivienda.objects.get(codigo="A-01")
+        cls.depto = Vivienda.objects.get(codigo="S-02")
+        cls.porton = PuntoAcceso.objects.get(codigo="N-01")
+
+    def autenticar(self, usuario):
+        cuenta = get_user_model().objects.get(username=usuario)
+        token = RefreshToken.for_user(cuenta).access_token
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_cuatro_ciclos_crud_y_persistencia(self):
+        self.autenticar("demo_operador")
+        for ruta, datos, cambios in [
+            ("personas", {"codigo": "nueva", "nombre": "Ana"}, {"nombre": "Ana Sol"}),
+            ("terrenos", {"codigo": "oeste", "nombre": "Oeste", "administrador": self.duena.pk}, {"nombre": "Oeste Alto"}),
+            ("viviendas", {"terreno": self.norte.pk, "codigo": "B-42", "tipo": "casa"}, {"tipo": "departamento"}),
+            ("puntos-acceso", {"terreno": self.norte.pk, "codigo": "O-1", "nombre": "Patio"}, {"nombre": "Patio Este"}),
+        ]:
+            with self.subTest(ruta=ruta):
+                base = f"/api/{ruta}/"
+                creado = self.client.post(base, datos)
+                self.assertEqual(creado.status_code, 201, creado.data)
+                pk = creado.data["id"]
+                url = f"{base}{pk}/"
+                self.assertIn(pk, [fila["id"] for fila in self.client.get(base).data])
+                self.assertEqual(self.client.get(url).status_code, 200)
+                self.assertEqual(self.client.put(url, {**datos, **cambios}).status_code, 200)
+                self.assertEqual(self.client.patch(url, cambios).status_code, 200)
+                for campo, valor in cambios.items():
+                    self.assertEqual(self.client.get(url).data[campo], valor)
+                self.assertEqual(self.client.delete(url).status_code, 204)
+                self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_jwt_login_renovacion_y_acceso(self):
+        ruta = "/api/personas/"
+        self.assertEqual(self.client.get(ruta).status_code, 401)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer invalido")
+        self.assertEqual(self.client.get(ruta).status_code, 401)
+        self.client.credentials()
+        user = self.duena.cuenta
+        user.set_password("SoloPruebaTemporal")
+        user.save()
+        tokens = self.client.post("/api/token/", {"username": user.username, "password": "SoloPruebaTemporal"})
+        self.assertEqual(tokens.status_code, 200)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + tokens.data["access"])
+        self.assertEqual([p["id"] for p in self.client.get(ruta).data], [self.duena.pk])
+        self.client.credentials()
+        nuevo = self.client.post("/api/token/refresh/", {"refresh": tokens.data["refresh"]})
+        self.assertEqual(nuevo.status_code, 200)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + nuevo.data["access"])
+        self.assertEqual(self.client.get(ruta).status_code, 200)
+
+    def test_asignar_y_comprobar_estado_tras_cada_rechazo(self):
+        self.autenticar("demo_duena")
+        ruta = f"/api/viviendas/{self.casa.pk}/asignaciones/"
+        body = {"persona": self.luz.pk, "rol": "arrendatario"}
+        self.assertEqual(self.client.post(ruta, body).status_code, 201)
+        antes = list(Participacion.objects.order_by("id").values())
+        self.assertTrue(any(r["persona_id"] == self.luz.pk and r["rol"] == "arrendatario" for r in antes))
+        for url, cambio, esperado in [
+            (ruta, {"rol": "conviviente"}, 409),
+            (f"/api/viviendas/{self.depto.pk}/asignaciones/", {}, 403),
+            (ruta, {"rol": "propietario_administrador"}, 400),
+        ]:
+            self.assertEqual(self.client.post(url, {**body, **cambio}).status_code, esperado)
+            self.assertEqual(list(Participacion.objects.order_by("id").values()), antes)
+        self.autenticar("demo_gestora")
+        self.assertEqual(self.client.post(ruta, body).status_code, 403)
+        self.assertEqual(list(Participacion.objects.order_by("id").values()), antes)
+
+    def test_alcance_y_baja_protegida(self):
+        self.autenticar("demo_trabajador")
+        self.assertEqual(self.client.get("/api/viviendas/").data, [])
+        self.assertEqual([v["id"] for v in self.client.get("/api/terrenos/").data], [self.norte.pk])
+        self.assertEqual(self.client.get(f"/api/viviendas/{self.depto.pk}/").status_code, 404)
+        self.assertEqual(self.client.patch(f"/api/viviendas/{self.depto.pk}/", {"tipo": "casa"}).status_code, 403)
+        self.autenticar("demo_operador")
+        self.assertEqual(self.client.delete(f"/api/terrenos/{self.norte.pk}/").status_code, 409)
+        self.assertTrue(Terreno.objects.filter(pk=self.norte.pk).exists())
+        self.assertEqual(self.client.patch(f"/api/viviendas/{self.casa.pk}/", {"terreno": self.depto.terreno_id}).status_code, 400)
+
+    def test_autoridad_territorial_de_creacion(self):
+        self.autenticar("demo_gestora")
+        body = {"terreno": self.norte.pk, "codigo": "C-02", "tipo": "casa"}
+        self.assertEqual(self.client.post("/api/viviendas/", body).status_code, 201)
+        ajeno = Terreno.objects.create(codigo="este", nombre="Este", administrador=self.duena)
+        body["terreno"] = ajeno.pk
+        self.assertEqual(self.client.post("/api/viviendas/", body).status_code, 403)
+        self.assertFalse(Vivienda.objects.filter(terreno=ajeno).exists())
+
+    def test_accesos_e_historial(self):
+        self.autenticar("demo_trabajador")
+        ruta = "/api/accesos/solicitudes/"
+        app = {"punto": self.porton.pk, "medio": "app", "cerca": True}
+        rfid = {"punto": self.porton.pk, "medio": "rfid", "uid": "DEMO-RFID-LUZ"}
+        for datos, esperado in [(app, "autorizado"), ({**app, "cerca": False}, "fuera_de_proximidad"),
+                                ({**app, "punto": PuntoAcceso.objects.get(codigo="N-02").pk}, "sin_permiso_punto")]:
+            resultado = self.client.post(ruta, datos, format="json")
+            self.assertEqual(resultado.status_code, 201)
+            self.assertEqual(resultado.data["motivo"], esperado)
+            self.assertEqual(resultado.data["permitido"], esperado == "autorizado")
+        self.assertEqual(self.client.post(ruta, rfid).status_code, 403)
+        self.autenticar("demo_operador")
+        conocido = self.client.post(ruta, rfid)
+        self.assertEqual(conocido.data["persona"], self.luz.pk)
+        self.assertTrue(conocido.data["permitido"])
+        desconocido = self.client.post(ruta, {**rfid, "uid": "NO-REGISTRADA"})
+        self.assertIsNone(desconocido.data["persona"])
+        self.assertEqual(desconocido.data["motivo"], "credencial_desconocida")
+        self.assertEqual(len(desconocido.data["huella"]), 64)
+        self.assertEqual(Intento.objects.count(), 5)
+        filtros = {"persona": self.luz.pk, "terreno": self.norte.pk, "punto": self.porton.pk,
+                   "fecha": timezone.localdate().isoformat()}
+        self.assertEqual(len(self.client.get("/api/historial/", filtros).data), 3)
+        self.autenticar("demo_residente")
+        self.assertEqual(self.client.get("/api/historial/").data, [])
+
+    def test_revocacion_de_vinculo_y_tarjeta(self):
+        self.autenticar("demo_operador")
+        datos = {"punto": self.porton.pk, "medio": "rfid", "uid": "DEMO-RFID-LUZ"}
+        Empleo.objects.filter(persona=self.luz).delete()
+        self.assertEqual(self.client.post("/api/accesos/solicitudes/", datos).data["motivo"], "sin_vinculo_territorial")
+        Credencial.objects.update(activa=False)
+        self.assertEqual(self.client.post("/api/accesos/solicitudes/", datos).data["motivo"], "credencial_inactiva")
+
+    def test_semilla_repetible(self):
+        modelos = [Persona, Terreno, Vivienda, PuntoAcceso, Participacion, Empleo, Credencial, PermisoPunto]
+        antes = [m.objects.count() for m in modelos]
+        call_command("seed_demo", stdout=StringIO())
+        self.assertEqual([m.objects.count() for m in modelos], antes)

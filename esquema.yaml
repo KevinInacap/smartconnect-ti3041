@@ -1,0 +1,1121 @@
+openapi: 3.0.3
+info:
+  title: SmartConnect · API residencial
+  version: 1.0.0
+  description: Catálogo, asignaciones y control de acceso. Horas ISO 8601.
+paths:
+  /api/accesos/solicitudes/:
+    post:
+      operationId: accesos_solicitudes_create
+      tags:
+      - accesos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SolicitudRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SolicitudRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intento'
+          description: ''
+  /api/historial/:
+    get:
+      operationId: historial_list
+      parameters:
+      - in: query
+        name: fecha
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: persona
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: punto
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: terreno
+        schema:
+          type: integer
+          minimum: 1
+      tags:
+      - historial
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Intento'
+          description: ''
+  /api/personas/:
+    get:
+      operationId: personas_list
+      tags:
+      - personas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Persona'
+          description: ''
+    post:
+      operationId: personas_create
+      tags:
+      - personas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+          description: ''
+  /api/personas/{id}/:
+    get:
+      operationId: personas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este persona.
+        required: true
+      tags:
+      - personas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+          description: ''
+    put:
+      operationId: personas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este persona.
+        required: true
+      tags:
+      - personas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PersonaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+          description: ''
+    patch:
+      operationId: personas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este persona.
+        required: true
+      tags:
+      - personas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPersonaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPersonaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPersonaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Persona'
+          description: ''
+    delete:
+      operationId: personas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este persona.
+        required: true
+      tags:
+      - personas
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/puntos-acceso/:
+    get:
+      operationId: puntos_acceso_list
+      tags:
+      - puntos-acceso
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Punto'
+          description: ''
+    post:
+      operationId: puntos_acceso_create
+      tags:
+      - puntos-acceso
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Punto'
+          description: ''
+  /api/puntos-acceso/{id}/:
+    get:
+      operationId: puntos_acceso_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este punto acceso.
+        required: true
+      tags:
+      - puntos-acceso
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Punto'
+          description: ''
+    put:
+      operationId: puntos_acceso_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este punto acceso.
+        required: true
+      tags:
+      - puntos-acceso
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PuntoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Punto'
+          description: ''
+    patch:
+      operationId: puntos_acceso_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este punto acceso.
+        required: true
+      tags:
+      - puntos-acceso
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPuntoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPuntoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPuntoRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Punto'
+          description: ''
+    delete:
+      operationId: puntos_acceso_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este punto acceso.
+        required: true
+      tags:
+      - puntos-acceso
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/terrenos/:
+    get:
+      operationId: terrenos_list
+      tags:
+      - terrenos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Terreno'
+          description: ''
+    post:
+      operationId: terrenos_create
+      tags:
+      - terrenos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terreno'
+          description: ''
+  /api/terrenos/{id}/:
+    get:
+      operationId: terrenos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este terreno.
+        required: true
+      tags:
+      - terrenos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terreno'
+          description: ''
+    put:
+      operationId: terrenos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este terreno.
+        required: true
+      tags:
+      - terrenos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TerrenoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terreno'
+          description: ''
+    patch:
+      operationId: terrenos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este terreno.
+        required: true
+      tags:
+      - terrenos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTerrenoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTerrenoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTerrenoRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terreno'
+          description: ''
+    delete:
+      operationId: terrenos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este terreno.
+        required: true
+      tags:
+      - terrenos
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/viviendas/:
+    get:
+      operationId: viviendas_list
+      tags:
+      - viviendas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vivienda'
+          description: ''
+    post:
+      operationId: viviendas_create
+      tags:
+      - viviendas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vivienda'
+          description: ''
+  /api/viviendas/{id}/:
+    get:
+      operationId: viviendas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vivienda'
+          description: ''
+    put:
+      operationId: viviendas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ViviendaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vivienda'
+          description: ''
+    patch:
+      operationId: viviendas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedViviendaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedViviendaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedViviendaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vivienda'
+          description: ''
+    delete:
+      operationId: viviendas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/viviendas/{id}/asignaciones/:
+    get:
+      operationId: viviendas_asignaciones_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participacion'
+          description: ''
+    post:
+      operationId: viviendas_asignaciones_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este vivienda.
+        required: true
+      tags:
+      - viviendas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsignacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AsignacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AsignacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participacion'
+          description: ''
+components:
+  schemas:
+    AsignacionRequest:
+      type: object
+      properties:
+        persona:
+          type: integer
+        rol:
+          $ref: '#/components/schemas/AsignacionRolEnum'
+      required:
+      - persona
+      - rol
+    AsignacionRolEnum:
+      enum:
+      - arrendatario
+      - conviviente
+      type: string
+      description: |-
+        * `arrendatario` - arrendatario
+        * `conviviente` - conviviente
+    Intento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        fecha:
+          type: string
+          format: date-time
+          readOnly: true
+        punto:
+          type: integer
+          readOnly: true
+        terreno:
+          type: integer
+          readOnly: true
+        persona:
+          type: integer
+          readOnly: true
+          nullable: true
+        medio:
+          allOf:
+          - $ref: '#/components/schemas/IntentoMedioEnum'
+          readOnly: true
+        permitido:
+          type: boolean
+          readOnly: true
+        motivo:
+          type: string
+          readOnly: true
+        huella:
+          type: string
+          readOnly: true
+      required:
+      - fecha
+      - huella
+      - id
+      - medio
+      - motivo
+      - permitido
+      - persona
+      - punto
+      - terreno
+    IntentoMedioEnum:
+      enum:
+      - app
+      - rfid
+      type: string
+      description: |-
+        * `app` - App
+        * `rfid` - RFID
+    Participacion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        persona:
+          type: integer
+          readOnly: true
+        vivienda:
+          type: integer
+          readOnly: true
+        rol:
+          allOf:
+          - $ref: '#/components/schemas/ParticipacionRolEnum'
+          readOnly: true
+        creada:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creada
+      - id
+      - persona
+      - rol
+      - vivienda
+    ParticipacionRolEnum:
+      enum:
+      - propietario_administrador
+      - propietario
+      - arrendatario
+      - conviviente
+      type: string
+      description: |-
+        * `propietario_administrador` - Propietario administrador
+        * `propietario` - Propietario
+        * `arrendatario` - Arrendatario
+        * `conviviente` - Conviviente
+    PatchedPersonaRequest:
+      type: object
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedPuntoRequest:
+      type: object
+      properties:
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 40
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedTerrenoRequest:
+      type: object
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        administrador:
+          type: integer
+    PatchedViviendaRequest:
+      type: object
+      properties:
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 40
+        tipo:
+          $ref: '#/components/schemas/TipoEnum'
+    Persona:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        codigo:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          maxLength: 100
+      required:
+      - codigo
+      - id
+      - nombre
+    PersonaRequest:
+      type: object
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - codigo
+      - nombre
+    Punto:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          maxLength: 40
+        nombre:
+          type: string
+          maxLength: 100
+      required:
+      - codigo
+      - id
+      - nombre
+      - terreno
+    PuntoRequest:
+      type: object
+      properties:
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 40
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - codigo
+      - nombre
+      - terreno
+    SolicitudMedioEnum:
+      enum:
+      - app
+      - rfid
+      type: string
+      description: |-
+        * `app` - app
+        * `rfid` - rfid
+    SolicitudRequest:
+      type: object
+      properties:
+        punto:
+          type: integer
+        medio:
+          $ref: '#/components/schemas/SolicitudMedioEnum'
+        cerca:
+          type: boolean
+        uid:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - medio
+      - punto
+    Terreno:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        codigo:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          maxLength: 100
+        administrador:
+          type: integer
+      required:
+      - administrador
+      - codigo
+      - id
+      - nombre
+    TerrenoRequest:
+      type: object
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        administrador:
+          type: integer
+      required:
+      - administrador
+      - codigo
+      - nombre
+    TipoEnum:
+      enum:
+      - casa
+      - departamento
+      type: string
+      description: |-
+        * `casa` - Casa
+        * `departamento` - Departamento
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    Vivienda:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          maxLength: 40
+        tipo:
+          $ref: '#/components/schemas/TipoEnum'
+      required:
+      - codigo
+      - id
+      - terreno
+      - tipo
+    ViviendaRequest:
+      type: object
+      properties:
+        terreno:
+          type: integer
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 40
+        tipo:
+          $ref: '#/components/schemas/TipoEnum'
+      required:
+      - codigo
+      - terreno
+      - tipo
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
