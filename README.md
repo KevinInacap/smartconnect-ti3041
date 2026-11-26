@@ -44,17 +44,19 @@ Abre al mismo tiempo **Apidog** y el **Historial**. Las peticiones de la carpeta
 
 ### Preparación en otro equipo
 
-Con Python 3.13, Git y, para ejecutar las colecciones por consola, Node.js con npm, clona la versión del pull request:
+Instala Python 3.13 y Git, clona el proyecto y abre el archivo de inicio. Para ejecutar las colecciones por consola también necesitas Node.js con npm.
 
 ```powershell
-git clone --branch fix/demo-clase https://github.com/KevinInacap/smartconnect-ti3041.git
+git clone https://github.com/KevinInacap/smartconnect-ti3041.git
 cd smartconnect-ti3041
 & '.\Iniciar SmartConnect.cmd'
 ```
 
 La instalación manual equivalente empieza con `python -m venv .venv`. Activa ese entorno y ejecuta `python -m pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py seed_demo --aula` y `python manage.py runserver 127.0.0.1:8000 --insecure`. Django usa el argumento `--insecure` para servir los archivos estáticos locales de Swagger y Admin durante la práctica.
 
-En un proyecto nuevo de Apidog, importa [SmartConnect.json](apidog/SmartConnect.json) como colección Postman. Para el recorrido largo importa [Rubrica.json](apidog/Rubrica.json) en un módulo o proyecto aparte a fin de conservar los nombres de peticiones que comparten método y URL. Puedes importar también [el contrato OpenAPI](esquema.yaml). Usa `http://127.0.0.1:8000` como URL base del servicio y valor de `baseUrl` si el importador mantiene la variable. [Guía de importación](https://docs.apidog.com/en/manual-import-633884m0)
+En un proyecto nuevo de Apidog, importa la colección Postman con la opción de incluir **ejemplos de respuesta**. Cada uno de los diez pasos tiene un ejemplo obtenido al probar la API. Los ID son ilustrativos y los JWT del ejemplo son texto ficticio. Pulsa **Enviar** para obtener los valores de tu sesión. Usa `http://127.0.0.1:8000` como URL base del servicio y valor de `baseUrl` si el importador mantiene la variable. [Colección de la demostración](apidog/SmartConnect.json) · [Importación desde Postman](https://docs.apidog.com/import-from-postman-635043m0)
+
+Para el recorrido largo importa la colección de la rúbrica en un módulo o proyecto aparte a fin de conservar los nombres de peticiones que comparten método y URL. El esquema OpenAPI documenta el contrato completo del servicio. [Colección de la rúbrica](apidog/Rubrica.json) · [Contrato OpenAPI](esquema.yaml)
 
 **Si hay un error en Apidog**
 
@@ -64,7 +66,7 @@ En un proyecto nuevo de Apidog, importa [SmartConnect.json](apidog/SmartConnect.
 | `401` en **Iniciar sesión** | Revisa el cuerpo JSON de **POST /api/token/**. Usa el usuario y la clave de Scarlett de la tabla. Si el cuerpo todavía contiene `{{demoPassword}}`, estás usando una copia anterior. |
 | `401` después de un login correcto | Selecciona el mismo entorno y vuelve a ejecutar login y renovación. En las rutas protegidas revisa el encabezado Bearer y que los postprocesadores estén habilitados. |
 | `400` o una URL con `{{casa}}` o `{{principal}}` sin resolver | Ejecuta las consultas 4 a 6 en orden. Son las que obtienen los ID de **tu** base de datos. |
-| Apidog marca en rojo «se esperaba 200» | Mira el **estado real**, el **Body** y el paso de la guía. Algunas definiciones importadas tienen validación genérica de éxito 200. Para las aperturas el resultado esperado es 201, y en las pruebas de rechazo se esperan 401, 403 o 409 según el caso. Las aserciones de la colección comprueban esos códigos. |
+| El estado real coincide con la guía, pero la validación marca un código o tipo incorrecto | En **Validar respuesta**, selecciona el código esperado para ese paso. Si una importación anterior solo ofrece un objeto 200, edita la definición con el código de la guía y el tipo correcto. **Mis viviendas**, **Mi rol en A-01**, **Puntos de mi terreno** y **Mi historial** devuelven un arreglo JSON. También puedes extraer el esquema del cuerpo recibido. Guarda la definición y vuelve a enviar. [Validación](https://docs.apidog.com/en/validating-responses-541768m0) · [Extracción del esquema](https://docs.apidog.com/en/saving-requests-as-endpoints-629856m0) |
 
 ## Modelo de datos
 

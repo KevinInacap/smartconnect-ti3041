@@ -52,6 +52,31 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "401 · Viviendas sin sesión",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/viviendas/"
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Las credenciales de autenticación no se proveyeron.\"\n}"
+            }
           ]
         },
         {
@@ -96,6 +121,44 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "200 · Iniciar sesión",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/token/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"aula_scarlett\",\n  \"password\": \"Scarlett-Aula-TI3041!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"refresh\": \"ejemplo-de-refresh\",\n  \"access\": \"ejemplo-de-access\"\n}"
+            }
           ]
         },
         {
@@ -139,6 +202,44 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "200 · Renovar sesión",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/token/refresh/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access\": \"ejemplo-de-access\"\n}"
+            }
           ]
         },
         {
@@ -172,6 +273,35 @@
                   "pm.environment.set(\"casa\", pm.response.json().find(v => v.codigo === \"A-01\").id);"
                 ]
               }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 · Mis viviendas",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/viviendas/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"terreno\": 1,\n    \"codigo\": \"A-01\",\n    \"tipo\": \"casa\"\n  }\n]"
             }
           ]
         },
@@ -209,6 +339,35 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "200 · Mi rol en A-01",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 6,\n    \"persona\": 8,\n    \"vivienda\": 1,\n    \"rol\": \"arrendatario\",\n    \"creada\": \"2026-11-26T07:09:47.480961-03:00\"\n  }\n]"
+            }
           ]
         },
         {
@@ -243,6 +402,35 @@
                   "pm.environment.set(\"servicio\", pm.response.json().find(p => p.codigo === \"N-02\").id);"
                 ]
               }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 · Puntos de mi terreno",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/puntos-acceso/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"terreno\": 1,\n    \"codigo\": \"N-01\",\n    \"nombre\": \"Portón principal\"\n  },\n  {\n    \"id\": 2,\n    \"terreno\": 1,\n    \"codigo\": \"N-02\",\n    \"nombre\": \"Puerta de servicio\"\n  }\n]"
             }
           ]
         },
@@ -294,6 +482,48 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "201 · Entrar por el portón",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/accesos/solicitudes/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"medio\": \"app\",\n  \"punto\": \"{{principal}}\",\n  \"cerca\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"fecha\": \"2026-11-26T07:09:52.131820-03:00\",\n  \"punto\": 1,\n  \"terreno\": 1,\n  \"persona\": 8,\n  \"medio\": \"app\",\n  \"permitido\": true,\n  \"motivo\": \"autorizado\",\n  \"huella\": \"\"\n}"
+            }
           ]
         },
         {
@@ -344,6 +574,48 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "201 · Intentar la puerta de servicio",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/accesos/solicitudes/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"medio\": \"app\",\n  \"punto\": \"{{servicio}}\",\n  \"cerca\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 2,\n  \"fecha\": \"2026-11-26T07:09:52.242688-03:00\",\n  \"punto\": 2,\n  \"terreno\": 1,\n  \"persona\": 8,\n  \"medio\": \"app\",\n  \"permitido\": false,\n  \"motivo\": \"sin_permiso_punto\",\n  \"huella\": \"\"\n}"
+            }
           ]
         },
         {
@@ -390,6 +662,48 @@
                 ]
               }
             }
+          ],
+          "response": [
+            {
+              "name": "403 · Asignar como residente",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/viviendas/{{casa}}/asignaciones/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"persona\": \"{{persona}}\",\n  \"rol\": \"conviviente\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Se requiere ser propietario administrador de esta vivienda.\"\n}"
+            }
           ]
         },
         {
@@ -424,6 +738,35 @@
                   "pm.test(\"Ambos intentos quedaron registrados\", function () { pm.expect(ids).to.include.members([Number(pm.environment.get(\"alta\")), Number(pm.environment.get(\"baja\"))]); });"
                 ]
               }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 · Mi historial",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/historial/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 2,\n    \"fecha\": \"2026-11-26T07:09:52.242688-03:00\",\n    \"punto\": 2,\n    \"terreno\": 1,\n    \"persona\": 8,\n    \"medio\": \"app\",\n    \"permitido\": false,\n    \"motivo\": \"sin_permiso_punto\",\n    \"huella\": \"\"\n  },\n  {\n    \"id\": 1,\n    \"fecha\": \"2026-11-26T07:09:52.131820-03:00\",\n    \"punto\": 1,\n    \"terreno\": 1,\n    \"persona\": 8,\n    \"medio\": \"app\",\n    \"permitido\": true,\n    \"motivo\": \"autorizado\",\n    \"huella\": \"\"\n  }\n]"
             }
           ]
         }
