@@ -33,3 +33,4 @@ jobs:
           curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent http://127.0.0.1:8000/api/esquema/ -o /dev/null
           npx --yes --package=apidog-cli@2.2.12 apidog run apidog/SmartConnect.json --lang en
           npx --yes --package=apidog-cli@2.2.12 apidog run apidog/Rubrica.json --lang en
+          npx --yes --package=apidog-cli@2.2.12 apidog run apidog/RegistroUsuarios.json --lang en

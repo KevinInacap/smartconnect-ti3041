@@ -71,6 +71,56 @@ class PruebaAPI(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + nuevo.data["access"])
         self.assertEqual(self.client.get(ruta).status_code, 200)
 
+    def test_registro_publico_guarda_la_cuenta_sin_privilegios(self):
+        usuario = "registro.nuevo+1"
+        clave = "  Sol y patio 28!  "
+        credenciales = {"username": usuario, "password": clave}
+        registro = self.client.post(
+            "/api/usuarios/", {**credenciales, "is_staff": True, "is_superuser": True}, format="json"
+        )
+        self.assertEqual(registro.status_code, 201, registro.data)
+        cuenta = get_user_model().objects.get(username=usuario)
+        self.assertEqual(registro.data, {"id": cuenta.pk, "username": usuario})
+        self.assertNotEqual(cuenta.password, clave)
+        self.assertTrue(cuenta.check_password(clave))
+        self.assertTrue(cuenta.is_active)
+        self.assertFalse(cuenta.is_staff)
+        self.assertFalse(cuenta.is_superuser)
+        self.assertFalse(Persona.objects.filter(cuenta=cuenta).exists())
+
+        login = self.client.post("/api/token/", credenciales, format="json")
+        self.assertEqual(login.status_code, 200, login.data)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+        viviendas = self.client.get("/api/viviendas/")
+        self.assertEqual(viviendas.status_code, 200)
+        self.assertEqual(viviendas.data, [])
+        crear_persona = self.client.post("/api/personas/", {"codigo": "nueva-ficha", "nombre": "Nueva ficha"})
+        self.assertEqual(crear_persona.status_code, 403)
+
+    def test_registro_rechaza_datos_invalidos_y_conserva_la_cuenta_duplicada(self):
+        usuarios = get_user_model().objects
+        cuenta = usuarios.create_user("cuenta_existente", password="ClaveOriginal28!")
+        total = usuarios.count()
+        for datos, campo in [
+            ({"password": "ClaveNueva28!"}, "username"),
+            ({"username": "sin_clave"}, "password"),
+            ({"username": "clave_vacia", "password": ""}, "password"),
+            ({"username": "clave_corta", "password": "1234567"}, "password"),
+            ({"username": "clave_larga", "password": "a" * 129}, "password"),
+            ({"username": "nombre inválido", "password": "ClaveNueva28!"}, "username"),
+            ({"username": "u" * 151, "password": "ClaveNueva28!"}, "username"),
+            ({"username": cuenta.username, "password": "ClaveNueva28!"}, "username"),
+            ({"username": "ｃuenta_existente", "password": "ClaveNueva28!"}, "username"),
+        ]:
+            with self.subTest(campo=campo, usuario=datos.get("username")):
+                respuesta = self.client.post("/api/usuarios/", datos, format="json")
+                self.assertEqual(respuesta.status_code, 400, respuesta.data)
+                self.assertIn(campo, respuesta.data)
+        self.assertEqual(usuarios.count(), total)
+        cuenta.refresh_from_db()
+        self.assertTrue(cuenta.check_password("ClaveOriginal28!"))
+        self.assertFalse(cuenta.check_password("ClaveNueva28!"))
+
     def test_asignar_y_comprobar_estado_tras_cada_rechazo(self):
         self.autenticar("demo_duena")
         ruta = f"/api/viviendas/{self.casa.pk}/asignaciones/"

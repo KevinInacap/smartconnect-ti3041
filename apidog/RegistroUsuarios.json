@@ -1,0 +1,384 @@
+{
+  "apidogCli": "1.1",
+  "info": {
+    "name": "SmartConnect · Registro de usuarios",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecuta los pasos en orden con la API local. Para elegir tu nombre y clave en Apidog, usa las variables locales del entorno registroUsuarioManual y registroClaveManual. Cada recorrido automático deja una cuenta ficticia nueva en la base de pruebas."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "environment": {
+    "name": "SmartConnect local",
+    "variable": {
+      "values": [
+        {
+          "key": "baseUrl",
+          "value": "http://127.0.0.1:8000"
+        },
+        {
+          "key": "registroUsuarioManual",
+          "value": ""
+        },
+        {
+          "key": "registroClaveManual",
+          "value": ""
+        }
+      ]
+    }
+  },
+  "item": [
+    {
+      "name": "Alta, login y alcance inicial",
+      "item": [
+        {
+          "name": "1. Registrar usuario nuevo",
+          "metaInfo": {
+            "id": "1",
+            "type": "http",
+            "name": "1. Registrar usuario nuevo"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/",
+            "description": "Crea una cuenta estándar. Para elegir nombre y clave, agrega las variables locales registroUsuarioManual y registroClaveManual al entorno antes de enviar. Déjalas vacías para ejecutar la prueba con datos ficticios nuevos.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": {{registro_usuario_json}},\n  \"password\": {{registro_clave_json}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const serie = Date.now() + \"_\" + Math.random().toString(36).slice(2, 8);",
+                  "const nombreElegido = pm.environment.get(\"registroUsuarioManual\");",
+                  "const claveElegida = pm.environment.get(\"registroClaveManual\");",
+                  "pm.environment.set(\"registro_usuario_json\", JSON.stringify(nombreElegido || \"aula_reg_\" + serie));",
+                  "pm.environment.set(\"registro_clave_json\", JSON.stringify(claveElegida || \"Aula!Registro-27-Prueba\"));",
+                  "pm.environment.set(\"registro_serie\", serie);",
+                  "pm.environment.unset(\"registro_access\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"El alta devuelve el ID y el nombre, sin la contraseña\", function () {",
+                  "  const cuenta = pm.response.json();",
+                  "  pm.expect(Object.keys(cuenta).sort()).to.eql([\"id\", \"username\"]);",
+                  "  pm.expect(cuenta.id).to.be.a(\"number\").and.above(0);",
+                  "  const nombreEnviado = JSON.parse(pm.environment.get(\"registro_usuario_json\"));",
+                  "  pm.expect(cuenta.username).to.eql(nombreEnviado.normalize(\"NFKC\").trim());",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Rechazar usuario duplicado",
+          "metaInfo": {
+            "id": "2",
+            "type": "http",
+            "name": "2. Rechazar usuario duplicado"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/",
+            "description": "Repite el alta de la cuenta creada en el paso 1.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": {{registro_usuario_json}},\n  \"password\": {{registro_clave_json}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"El error corresponde al nombre duplicado\", function () { pm.expect(Object.keys(pm.response.json())).to.include(\"username\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Rechazar nombre con espacios",
+          "metaInfo": {
+            "id": "3",
+            "type": "http",
+            "name": "3. Rechazar nombre con espacios"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/",
+            "description": "Comprueba la validación del nombre de usuario.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"aula con espacios\",\n  \"password\": {{registro_clave_json}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"El error corresponde al formato del nombre\", function () { pm.expect(Object.keys(pm.response.json())).to.include(\"username\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Rechazar clave corta",
+          "metaInfo": {
+            "id": "4",
+            "type": "http",
+            "name": "4. Rechazar clave corta"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/",
+            "description": "Comprueba la longitud mínima de la clave.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"aula_corta_{{registro_serie}}\",\n  \"password\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"El error corresponde a la clave corta\", function () { pm.expect(Object.keys(pm.response.json())).to.include(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Rechazar clave vacía",
+          "metaInfo": {
+            "id": "5",
+            "type": "http",
+            "name": "5. Rechazar clave vacía"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/usuarios/",
+            "description": "Comprueba que la clave es obligatoria.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"aula_vacia_{{registro_serie}}\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"El error corresponde a la clave vacía\", function () { pm.expect(Object.keys(pm.response.json())).to.include(\"password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Iniciar sesión con la cuenta nueva",
+          "metaInfo": {
+            "id": "6",
+            "type": "http",
+            "name": "6. Iniciar sesión con la cuenta nueva"
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/token/",
+            "description": "Usa el mismo nombre y clave con que se creó la cuenta. Apidog guarda el token de acceso para la consulta siguiente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": {{registro_usuario_json}},\n  \"password\": {{registro_clave_json}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"El login devuelve access y refresh\", function () {",
+                  "  const tokens = pm.response.json();",
+                  "  pm.expect(typeof tokens.access).to.eql(\"string\");",
+                  "  pm.expect(typeof tokens.refresh).to.eql(\"string\");",
+                  "  pm.expect(Boolean(tokens.access && tokens.refresh)).to.eql(true);",
+                  "});",
+                  "if (pm.response.code === 200) pm.environment.set(\"registro_access\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Consultar viviendas de la cuenta nueva",
+          "metaInfo": {
+            "id": "7",
+            "type": "http",
+            "name": "7. Consultar viviendas de la cuenta nueva"
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{registro_access}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/viviendas/",
+            "description": "Usa el token del paso anterior. La lista queda vacía hasta que se vincule la cuenta con una ficha y una vivienda."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"La cuenta todavía no tiene viviendas asignadas\", function () { pm.expect(pm.response.json()).to.eql([]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
