@@ -1,0 +1,18 @@
+digraph Vivienda {
+  graph [bgcolor="#f8fafc", pad="0.30", nodesep="0.45", ranksep="0.60", splines=polyline, outputorder=edgesfirst, fontname="Arial"];
+  node [shape=plain, fontname="Arial", fontsize=13];
+  edge [fontname="Arial", fontsize=11, color="#64748b", fontcolor="#334155", penwidth=1.5, arrowsize=0.72];
+  cuenta [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Cuenta Django</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id<BR ALIGN="LEFT"/>UQ  username</FONT></TD></TR></TABLE>>];
+  persona [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Persona</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  UQ  codigo<BR ALIGN="LEFT"/>FK  cuenta_id (opcional)<BR ALIGN="LEFT"/>nombre</FONT></TD></TR></TABLE>>];
+  terreno [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Terreno</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  UQ  codigo<BR ALIGN="LEFT"/>FK  administrador_id<BR ALIGN="LEFT"/>nombre</FONT></TD></TR></TABLE>>];
+  vivienda [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#11695f"><FONT COLOR="white" POINT-SIZE="15"><B>Vivienda</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  terreno_id<BR ALIGN="LEFT"/>codigo  ·  tipo</FONT></TD></TR></TABLE>>];
+  vinculo [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#1e4166"><FONT COLOR="white" POINT-SIZE="15"><B>Participación</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  persona_id<BR ALIGN="LEFT"/>FK  vivienda_id<BR ALIGN="LEFT"/>rol  ·  creada</FONT></TD></TR></TABLE>>];
+  empleo [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#ffffff" COLOR="#94a3b8" STYLE="ROUNDED"><TR><TD ALIGN="LEFT" BGCOLOR="#1e4166"><FONT COLOR="white" POINT-SIZE="15"><B>Empleo</B></FONT></TD></TR><TR><TD BORDER="1" SIDES="BLR" ALIGN="LEFT" BALIGN="LEFT"><FONT COLOR="#273950">PK  id  ·  FK  persona_id<BR ALIGN="LEFT"/>FK  terreno_id</FONT></TD></TR></TABLE>>];
+  cuenta -> persona [label=" 0..1 ↔ 0..1 "];
+  persona -> terreno [label=" 1 administra 0..N "];
+  terreno -> vivienda [label=" 1 contiene 0..N "];
+  persona -> vinculo [label=" 1 tiene 0..N "];
+  vivienda -> vinculo [label=" 1 reúne 0..N "];
+  persona -> empleo [label=" 1 ocupa 0..N "];
+  terreno -> empleo [label=" 1 registra 0..N "];
+}
