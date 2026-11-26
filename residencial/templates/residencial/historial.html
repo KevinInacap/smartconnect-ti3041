@@ -1,0 +1,32 @@
+{% extends "residencial/base.html" %}
+{% block titulo %}Historial de accesos · SmartConnect{% endblock %}
+{% block contenido %}
+  <h1>Historial de accesos</h1>
+  <p>Los últimos 50 intentos visibles para tu cuenta, del más reciente al más antiguo.</p>
+  <p>El ID de cada fila coincide con el <code>id</code> de la respuesta que recibes en Apidog.</p>
+  <div id="registros">{% include "residencial/registros.html" %}</div>
+  <p id="aviso" class="error" role="status"></p>
+  <noscript><p>Recarga esta página para consultar intentos nuevos.</p></noscript>
+  <script>
+    const registros = document.getElementById("registros");
+    const aviso = document.getElementById("aviso");
+    async function actualizar() {
+      try {
+        if (document.visibilityState === "visible") {
+          const respuesta = await fetch("{% url 'historial-web' %}?tabla=1", {cache: "no-store"});
+          if (respuesta.redirected) {
+            window.location.replace("{% url 'historial-web' %}");
+            return;
+          }
+          if (!respuesta.ok) throw new Error();
+          registros.innerHTML = await respuesta.text();
+          aviso.textContent = "";
+        }
+      } catch {
+        aviso.textContent = "Sin conexión con la API. Se volverá a intentar en tres segundos.";
+      }
+      window.setTimeout(actualizar, 3000);
+    }
+    window.setTimeout(actualizar, 3000);
+  </script>
+{% endblock %}

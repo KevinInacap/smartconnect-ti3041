@@ -1,0 +1,28 @@
+<p class="estado">Última consulta a las <time datetime="{{ actualizado|date:'c' }}">{{ actualizado|date:"H:i:s" }}</time> · Hora de Santiago</p>
+{% if registros %}
+  <div class="tarjeta desplazable" role="region" aria-label="Historial de accesos" tabindex="0">
+    <table>
+      <thead><tr>
+        <th scope="col">ID</th><th scope="col">Fecha y hora</th><th scope="col">Persona</th>
+        <th scope="col">Punto de acceso</th><th scope="col">Medio</th><th scope="col">Resultado</th>
+      </tr></thead>
+      <tbody>
+        {% for intento in registros %}
+          <tr>
+            <td><code>#{{ intento.pk }}</code></td>
+            <td><time datetime="{{ intento.fecha|date:'c' }}">{{ intento.fecha|date:"H:i:s" }}<span class="secundario">{{ intento.fecha|date:"d/m/Y" }}</span></time></td>
+            <td>{{ intento.persona.nombre|default:"Sin identificar" }}</td>
+            <td>{{ intento.punto.codigo }} · {{ intento.punto.nombre }}<span class="secundario">{{ intento.punto.terreno.nombre }}</span></td>
+            <td>{{ intento.get_medio_display }}</td>
+            <td>{% if intento.permitido %}<span class="decision si">Autorizado</span>{% else %}<span class="decision no">Denegado</span>{% endif %}<code class="secundario">{{ intento.motivo }}</code></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="tarjeta vacio">
+    <strong>Todavía no hay intentos visibles para esta cuenta.</strong>
+    <p>Envía una solicitud de acceso desde Apidog. Su resultado aparecerá aquí en la siguiente consulta.</p>
+  </div>
+{% endif %}

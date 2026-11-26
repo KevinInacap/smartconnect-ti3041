@@ -8,10 +8,6 @@
     {
       "key": "baseUrl",
       "value": "http://127.0.0.1:8000"
-    },
-    {
-      "key": "demoPassword",
-      "value": ""
     }
   ],
   "environment": {
@@ -21,10 +17,6 @@
         {
           "key": "baseUrl",
           "value": "http://127.0.0.1:8000"
-        },
-        {
-          "key": "demoPassword",
-          "value": ""
         }
       ]
     }
@@ -84,7 +76,7 @@
             "url": "{{baseUrl}}/api/token/",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"demo_vecina\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "raw": "{\n  \"username\": \"aula_scarlett\",\n  \"password\": \"Scarlett-Aula-TI3041!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

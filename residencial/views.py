@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Q, ProtectedError
+from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Credencial, Intento, Participacion, PermisoPunto, Persona, PuntoAcceso, Terreno, Vivienda
-from .politica import administra_vivienda, identidad, terrenos_visibles, visibles
+from .politica import administra_vivienda, identidad, intentos_visibles, terrenos_visibles, visibles
 from .serializers import (
     AsignacionSerializer, FiltrosHistorialSerializer, IntentoSerializer, ParticipacionSerializer,
     PersonaSerializer, PuntoSerializer, SolicitudSerializer, TerrenoSerializer, ViviendaSerializer,
@@ -148,13 +148,7 @@ class Historial(APIView):
     def get(self, request):
         filtros = FiltrosHistorialSerializer(data=request.query_params)
         filtros.is_valid(raise_exception=True)
-        registros = Intento.objects.select_related("punto").order_by("-fecha", "-pk")
-        if not request.user.is_staff:
-            persona = identidad(request.user)
-            if persona is None:
-                registros = registros.none()
-            else:
-                registros = registros.filter(Q(persona=persona) | Q(punto__terreno__administrador=persona))
+        registros = intentos_visibles(request.user).select_related("punto")
         campos = {"persona": "persona_id", "terreno": "punto__terreno_id", "punto": "punto_id", "fecha": "fecha__date"}
         for campo, valor in filtros.validated_data.items():
             registros = registros.filter(**{campos[campo]: valor})

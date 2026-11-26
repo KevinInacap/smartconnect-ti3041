@@ -1,0 +1,16 @@
+{% extends "residencial/base.html" %}
+{% block titulo %}Ingresar al historial · SmartConnect{% endblock %}
+{% block contenido %}
+  <section class="tarjeta ingreso">
+    <h1>Ingresar al historial</h1>
+    <p>Usa tu cuenta de SmartConnect para consultar los intentos de acceso que puedes ver.</p>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}<p class="error" role="alert">Revisa el usuario y la contraseña.</p>{% endif %}
+      <label for="{{ form.username.id_for_label }}">Usuario</label>{{ form.username }}
+      <label for="{{ form.password.id_for_label }}">Contraseña</label>{{ form.password }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit">Ingresar</button>
+    </form>
+  </section>
+{% endblock %}
